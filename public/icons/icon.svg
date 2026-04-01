@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#5A8A3A"/>
+  <g transform="translate(256,256)" fill="none" stroke="white" stroke-width="32" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Truck icon -->
+    <rect x="-140" y="-80" width="200" height="140" rx="16"/>
+    <path d="M60,-80 L140,-20 L140,60 L60,60 Z"/>
+    <circle cx="-80" cy="80" r="28" fill="#5A8A3A" stroke="white" stroke-width="28"/>
+    <circle cx="100" cy="80" r="28" fill="#5A8A3A" stroke="white" stroke-width="28"/>
+    <line x1="-140" y1="0" x2="140" y2="0"/>
+  </g>
+</svg>
