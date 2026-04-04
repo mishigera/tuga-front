@@ -59,3 +59,33 @@ export interface CreateOrderPayload {
   quantity: number
   products: string[]
 }
+
+export interface Address {
+  id: string
+  alias: string
+  street: string
+  neighborhood: string
+  city: string
+  notes?: string
+  isDefault: boolean
+  lat?: number
+  lng?: number
+}
+
+export interface Coupon {
+  code: string
+  description: string
+  discountType: 'percentage' | 'fixed'
+  discountValue: number
+  expiresAt: string
+}
+
+export interface SupportPhone {
+  label: string
+  number: string
+}
+
+export interface FeedbackPayload {
+  subject: 'queja' | 'sugerencia' | 'otro'
+  message: string
+}

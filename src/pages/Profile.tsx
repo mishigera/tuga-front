@@ -6,12 +6,12 @@ import {
 import { useAuthStore } from '../store/authStore'
 
 const MENU_ITEMS = [
-  { icon: MapPin, label: 'Mis Direcciones', desc: 'Gestiona tus direcciones de entrega' },
-  { icon: Tag, label: 'Cupones y Promociones', desc: 'Descuentos disponibles para ti' },
+  { icon: MapPin, label: 'Mis Direcciones', desc: 'Gestiona tus direcciones de entrega', to: '/perfil/direcciones' },
+  { icon: Tag, label: 'Cupones y Promociones', desc: 'Descuentos disponibles para ti', to: '/perfil/cupones' },
   { icon: Bell, label: 'Notificaciones', desc: 'Alertas y preferencias' },
   { icon: Clock, label: 'Historial de Pedidos', desc: 'Revisa tus pedidos anteriores', to: '/pedidos' },
-  { icon: Users, label: 'Invitar Amigos', desc: 'Comparte y gana descuentos' },
-  { icon: HelpCircle, label: 'Ayuda y Soporte', desc: 'Centro de ayuda y contacto' },
+  { icon: Users, label: 'Invitar Amigos', desc: 'Comparte y gana descuentos', to: '/perfil/invitar' },
+  { icon: HelpCircle, label: 'Ayuda y Soporte', desc: 'Centro de ayuda y contacto', to: '/perfil/soporte' },
 ]
 
 export function Profile() {
@@ -58,6 +58,7 @@ export function Profile() {
           {user?.email ?? ''}
         </p>
         <button
+          onClick={() => navigate('/perfil/editar')}
           style={{
             padding: '8px 20px',
             background: 'transparent',
