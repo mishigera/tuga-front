@@ -11,6 +11,11 @@ import { OrderStatus } from './pages/OrderStatus'
 import { Profile } from './pages/Profile'
 import { Favorites } from './pages/Favorites'
 import { Orders } from './pages/Orders'
+import { AddressManager } from './pages/AddressManager'
+import { CouponManager } from './pages/CouponManager'
+import { ProfileEditor } from './pages/ProfileEditor'
+import { SupportCenter } from './pages/SupportCenter'
+import { InviteFeature } from './pages/InviteFeature'
 import { useAuthStore } from './store/authStore'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -76,6 +81,11 @@ export function App() {
         <Route path="/carrito" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/estado-pedido/:id" element={<OrderStatus />} />
+        <Route path="/perfil/direcciones" element={<AddressManager />} />
+        <Route path="/perfil/cupones" element={<CouponManager />} />
+        <Route path="/perfil/editar" element={<ProfileEditor />} />
+        <Route path="/perfil/soporte" element={<SupportCenter />} />
+        <Route path="/perfil/invitar" element={<InviteFeature />} />
       </Route>
 
       {/* Catch all */}

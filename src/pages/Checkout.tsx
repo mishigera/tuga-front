@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, CreditCard, ChevronDown, CheckCircle } from 'lucide-react'
+import { MapPin, CreditCard, ChevronDown, CheckCircle, X } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import { ordersApi } from '../api/orders'
 import { useCartStore } from '../store/cartStore'
 import { useAuthStore } from '../store/authStore'
+import { useAddressStore } from '../store/addressStore'
+import { useCouponStore } from '../store/couponStore'
+import { applyDiscount } from '../utils/profileUtils'
 import { PageHeader } from '../components/PageHeader'
 
 export function Checkout() {
@@ -14,10 +17,20 @@ export function Checkout() {
   const clearCart = useCartStore((s) => s.clearCart)
   const user = useAuthStore((s) => s.user)
 
-  const [address, setAddress] = useState('Av. Insurgentes Sur 1234, Col. Del Valle, CDMX')
+  const defaultAddress = useAddressStore((s) => s.getDefault())
+  const addresses = useAddressStore((s) => s.addresses)
+  const activeCoupon = useCouponStore((s) => s.active)
+  const discountedTotal = applyDiscount(total, activeCoupon)
+
+  const [address, setAddress] = useState(
+    defaultAddress
+      ? `${defaultAddress.street}, ${defaultAddress.neighborhood}, ${defaultAddress.city}`
+      : 'Av. Insurgentes Sur 1234, Col. Del Valle, CDMX'
+  )
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [showSummary, setShowSummary] = useState(false)
+  const [showAddressPicker, setShowAddressPicker] = useState(false)
 
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: ordersApi.create,
@@ -49,7 +62,8 @@ export function Checkout() {
               Dirección de entrega
             </span>
             <button
-              style={{ background: 'none', border: 'none', color: '#5A8A3A', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+              onClick={() => { if (addresses.length > 0) setShowAddressPicker(true) }}
+              style={{ background: 'none', border: 'none', color: '#5A8A3A', fontSize: 12, fontWeight: 600, cursor: addresses.length > 0 ? 'pointer' : 'default' }}
             >
               Cambiar
             </button>
@@ -143,7 +157,17 @@ export function Checkout() {
         {/* Total and confirm */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0' }}>
           <span style={{ fontSize: 17, fontWeight: 700 }}>Total a Pagar</span>
-          <span style={{ fontSize: 22, fontWeight: 800, color: '#5A8A3A' }}>${total.toFixed(2)}</span>
+          {activeCoupon ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+              <span style={{ fontSize: 14, color: '#9A9DA8', textDecoration: 'line-through' }}>${total.toFixed(2)}</span>
+              <span style={{ fontSize: 12, color: '#4CAF50' }}>
+                -{activeCoupon.discountType === 'percentage' ? `${activeCoupon.discountValue}%` : `$${activeCoupon.discountValue.toFixed(2)}`} ({activeCoupon.code})
+              </span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: '#5A8A3A' }}>${discountedTotal.toFixed(2)}</span>
+            </div>
+          ) : (
+            <span style={{ fontSize: 22, fontWeight: 800, color: '#5A8A3A' }}>${total.toFixed(2)}</span>
+          )}
         </div>
 
         <button
@@ -156,6 +180,53 @@ export function Checkout() {
           {isPending ? 'Procesando...' : 'Confirmar Pedido'}
         </button>
       </div>
+
+      {/* Address picker modal */}
+      {showAddressPicker && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+            display: 'flex', alignItems: 'flex-end', zIndex: 1000,
+          }}
+          onClick={() => setShowAddressPicker(false)}
+        >
+          <div
+            style={{ background: '#181B21', borderRadius: '16px 16px 0 0', width: '100%', padding: 20, maxHeight: '60vh', overflowY: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>Seleccionar dirección</span>
+              <button
+                onClick={() => setShowAddressPicker(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9A9DA8' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {addresses.map((addr) => (
+                <button
+                  key={addr.id}
+                  onClick={() => {
+                    setAddress(`${addr.street}, ${addr.neighborhood}, ${addr.city}`)
+                    setShowAddressPicker(false)
+                  }}
+                  style={{
+                    background: '#23272F', border: 'none', borderRadius: 12, padding: 14,
+                    textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>
+                    {addr.alias}
+                    {addr.isDefault && <span style={{ marginLeft: 8, fontSize: 11, color: '#5A8A3A' }}>Predeterminada</span>}
+                  </span>
+                  <span style={{ fontSize: 12, color: '#9A9DA8' }}>{addr.street}, {addr.neighborhood}, {addr.city}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
