@@ -13,17 +13,12 @@ function normalize<T>(data: T): T {
   return data
 }
 
-function getAuthHeader(): Record<string, string> {
-  const token = useAuthStore.getState().user?.accessToken
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeader(),
       ...options?.headers,
     },
   })
@@ -46,7 +41,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 async function requestForm<T>(path: string, form: FormData, method = 'POST'): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers: getAuthHeader(), // no Content-Type, browser sets multipart boundary
+    credentials: 'include',
+    // no Content-Type header, browser sets multipart boundary automatically
     body: form,
   })
 

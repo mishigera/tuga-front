@@ -7,35 +7,23 @@ export function AuthCallback() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const token = params.get('token')
+    const sub = params.get('sub')
+    const name = params.get('name') ?? ''
+    const email = params.get('email') ?? ''
+    const picture = params.get('picture') ?? undefined
 
-    if (!token) {
-      navigate('/login?error=no_token', { replace: true })
+    if (!sub) {
+      navigate('/login?error=auth_failed', { replace: true })
       return
     }
 
-    try {
-      // Decode JWT payload (base64url)
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
-      const payload = JSON.parse(atob(base64))
+    // Persist to store synchronously before navigating
+    useAuthStore.getState().login({ id: sub, name, email, picture })
 
-      // Persist to store synchronously before navigating
-      useAuthStore.getState().login({
-        id: payload.sub,
-        name: payload.name ?? '',
-        email: payload.email ?? '',
-        picture: payload.picture,
-        accessToken: token,
-      })
-
-      // Small delay to ensure Zustand persist middleware flushes to localStorage
-      setTimeout(() => {
-        navigate('/', { replace: true })
-      }, 100)
-    } catch (e) {
-      console.error('AuthCallback error:', e)
-      navigate('/login?error=invalid_token', { replace: true })
-    }
+    // Small delay to ensure Zustand persist middleware flushes to localStorage
+    setTimeout(() => {
+      navigate('/', { replace: true })
+    }, 100)
   }, [])
 
   return (
