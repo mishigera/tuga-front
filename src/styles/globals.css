@@ -1,3 +1,5 @@
+@import './animations.css';
+
 :root {
   --bg-primary: #0E1014;
   --bg-card: #181B21;

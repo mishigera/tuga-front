@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Heart, Clock, ShoppingCart } from 'lucide-react'
@@ -6,8 +6,10 @@ import { useNavigate } from 'react-router-dom'
 import { shopsApi } from '../api/shops'
 import { productsApi } from '../api/products'
 import { MenuItemCard } from '../components/MenuItemCard'
+import { SkeletonCard } from '../components/SkeletonCard'
 import { useFavoritesStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
+import { useStaggerAnimation } from '../hooks/useStaggerAnimation'
 
 const TABS = ['Popular', 'Hamburguesas', 'Bebidas', 'Postres']
 
@@ -21,6 +23,9 @@ export function ShopMenu() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [tab, setTab] = useState('Popular')
+  const [heartPulse, setHeartPulse] = useState(false)
+  const [cartAnimClass, setCartAnimClass] = useState('')
+  const prevTotalItemsRef = useRef(0)
   const { toggle, isFavorite } = useFavoritesStore()
   const totalItems = useCartStore((s) => s.totalItems())
 
@@ -38,6 +43,27 @@ export function ShopMenu() {
 
   const fav = isFavorite(id ?? '')
   const heroImg = HERO_IMAGES[(id?.charCodeAt(id.length - 1) ?? 0) % HERO_IMAGES.length]
+
+  const stagger = useStaggerAnimation({
+    itemCount: products?.length ?? 0,
+    delayMs: 40,
+    durationMs: 300,
+    enabled: !isLoading,
+  })
+
+  useEffect(() => {
+    const prev = prevTotalItemsRef.current
+    if (prev === 0 && totalItems > 0) {
+      setCartAnimClass('cart-enter')
+      const t = setTimeout(() => setCartAnimClass(''), 250)
+      return () => clearTimeout(t)
+    } else if (prev > 0 && totalItems === 0) {
+      setCartAnimClass('cart-exit')
+      const t = setTimeout(() => setCartAnimClass(''), 200)
+      return () => clearTimeout(t)
+    }
+    prevTotalItemsRef.current = totalItems
+  }, [totalItems])
 
   return (
     <div className="page--no-nav" style={{ paddingBottom: totalItems > 0 ? 90 : 0 }}>
@@ -67,7 +93,11 @@ export function ShopMenu() {
           ←
         </button>
         <button
-          onClick={() => toggle(id ?? '')}
+          onClick={() => {
+            toggle(id ?? '')
+            setHeartPulse(true)
+            setTimeout(() => setHeartPulse(false), 250)
+          }}
           style={{
             position: 'absolute',
             top: 16,
@@ -84,7 +114,7 @@ export function ShopMenu() {
             color: fav ? '#E74C3C' : '#fff',
           }}
         >
-          <Heart size={16} fill={fav ? '#E74C3C' : 'none'} />
+          <Heart size={16} fill={fav ? '#E74C3C' : 'none'} className={heartPulse ? 'heart--pulse' : undefined} />
         </button>
       </div>
 
@@ -130,8 +160,19 @@ export function ShopMenu() {
       </div>
 
       {/* Products */}
-      {isLoading && <div className="spinner" />}
-      {products?.map((p) => <MenuItemCard key={p._id} product={p} />)}
+      {isLoading && (
+        <>
+          <SkeletonCard variant="menu-item" />
+          <SkeletonCard variant="menu-item" />
+          <SkeletonCard variant="menu-item" />
+          <SkeletonCard variant="menu-item" />
+        </>
+      )}
+      {products?.map((p, i) => (
+        <div key={p._id} className={stagger.className} style={stagger.getItemStyle(i)}>
+          <MenuItemCard product={p} />
+        </div>
+      ))}
       {products?.length === 0 && !isLoading && (
         <div className="error-state">
           <p>Sin productos disponibles.</p>
@@ -142,7 +183,7 @@ export function ShopMenu() {
       {totalItems > 0 && (
         <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 32px)', maxWidth: 398, zIndex: 50 }}>
           <button
-            className="btn-primary"
+            className={`btn-primary ${cartAnimClass} cart-pulse`.trim()}
             onClick={() => navigate('/carrito')}
             style={{ boxShadow: '0 4px 20px rgba(90,138,58,0.4)' }}
           >

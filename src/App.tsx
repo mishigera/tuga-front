@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { BottomNav } from './components/BottomNav'
+import { AnimatedRoutes } from './components/AnimatedRoutes'
 import { Login } from './pages/Login'
 import { AuthCallback } from './pages/AuthCallback'
 import { Home } from './pages/Home'
@@ -24,69 +25,58 @@ export function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
 
-      {/* Protected routes with bottom nav */}
+      {/* Animated protected routes */}
       <Route
-        path="/"
         element={
           <RequireAuth>
+            <AnimatedRoutes />
+          </RequireAuth>
+        }
+      >
+        {/* Routes with bottom nav */}
+        <Route
+          path="/"
+          element={
             <>
               <Home />
               <BottomNav />
             </>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/favoritos"
-        element={
-          <RequireAuth>
+          }
+        />
+        <Route
+          path="/favoritos"
+          element={
             <>
               <Favorites />
               <BottomNav />
             </>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/pedidos"
-        element={
-          <RequireAuth>
+          }
+        />
+        <Route
+          path="/pedidos"
+          element={
             <>
               <Orders />
               <BottomNav />
             </>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/perfil"
-        element={
-          <RequireAuth>
+          }
+        />
+        <Route
+          path="/perfil"
+          element={
             <>
               <Profile />
               <BottomNav />
             </>
-          </RequireAuth>
-        }
-      />
+          }
+        />
 
-      {/* Full-screen routes (no bottom nav) */}
-      <Route
-        path="/restaurante/:id"
-        element={<RequireAuth><ShopMenu /></RequireAuth>}
-      />
-      <Route
-        path="/carrito"
-        element={<RequireAuth><Cart /></RequireAuth>}
-      />
-      <Route
-        path="/checkout"
-        element={<RequireAuth><Checkout /></RequireAuth>}
-      />
-      <Route
-        path="/estado-pedido/:id"
-        element={<RequireAuth><OrderStatus /></RequireAuth>}
-      />
+        {/* Full-screen routes (no bottom nav) */}
+        <Route path="/restaurante/:id" element={<ShopMenu />} />
+        <Route path="/carrito" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/estado-pedido/:id" element={<OrderStatus />} />
+      </Route>
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
