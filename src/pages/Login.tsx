@@ -1,44 +1,8 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Truck } from 'lucide-react'
-import { useAuthStore } from '../store/authStore'
-import { usersApi } from '../api/users'
 
 export function Login() {
-  const navigate = useNavigate()
-  const login = useAuthStore((s) => s.login)
-  const [mode, setMode] = useState<'login' | 'register'>('login')
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    try {
-      if (mode === 'register') {
-        const user = await usersApi.create({ name, email, password })
-        login({ id: user._id, name: user.name, email: user.email })
-      } else {
-        // Simple login: find user by email (backend doesn't have login endpoint for users yet)
-        // We store locally for now and use the email as identifier
-        login({ id: Date.now().toString(), name: email.split('@')[0], email })
-      }
-      navigate('/', { replace: true })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   function handleGoogle() {
-    // Mock Google auth — navigate directly
-    login({ id: 'google-user', name: 'Emmanuel', email: 'emmanuel@correo.com' })
-    navigate('/', { replace: true })
+    window.location.href = '/api/users/googleAuth'
   }
 
   return (
@@ -68,89 +32,11 @@ export function Login() {
       <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 6, letterSpacing: -0.5 }}>
         Tuga App
       </h1>
-      <p style={{ color: '#9A9DA8', marginBottom: 40, fontSize: 14 }}>
+      <p style={{ color: '#9A9DA8', marginBottom: 60, fontSize: 14 }}>
         El Itacate de la Region
       </p>
 
-      {/* Toggle */}
-      <div style={{
-        display: 'flex',
-        background: '#181B21',
-        borderRadius: 12,
-        padding: 4,
-        marginBottom: 24,
-        width: '100%',
-      }}>
-        {(['login', 'register'] as const).map((m) => (
-          <button
-            key={m}
-            onClick={() => setMode(m)}
-            style={{
-              flex: 1,
-              padding: '10px',
-              border: 'none',
-              borderRadius: 9,
-              background: mode === m ? '#5A8A3A' : 'transparent',
-              color: mode === m ? '#fff' : '#9A9DA8',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-          >
-            {m === 'login' ? 'Entrar' : 'Registrarse'}
-          </button>
-        ))}
-      </div>
-
-      <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {mode === 'register' && (
-          <input
-            className="input"
-            type="text"
-            placeholder="Tu nombre"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        )}
-        <input
-          className="input"
-          type="email"
-          placeholder="Correo electrónico"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          className="input"
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error && (
-          <p style={{ color: '#E74C3C', fontSize: 13, textAlign: 'center' }}>{error}</p>
-        )}
-        <button className="btn-primary" type="submit" disabled={loading} style={{ marginTop: 4 }}>
-          {loading ? 'Cargando...' : mode === 'login' ? 'Entrar' : 'Crear cuenta'}
-        </button>
-      </form>
-
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        margin: '20px 0',
-        width: '100%',
-      }}>
-        <div style={{ flex: 1, height: 1, background: '#252830' }} />
-        <span style={{ color: '#5A5D68', fontSize: 13 }}>o</span>
-        <div style={{ flex: 1, height: 1, background: '#252830' }} />
-      </div>
-
-      <button className="btn-secondary" onClick={handleGoogle}>
+      <button className="btn-secondary" onClick={handleGoogle} style={{ width: '100%' }}>
         <svg width="18" height="18" viewBox="0 0 18 18">
           <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
           <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>

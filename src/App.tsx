@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { BottomNav } from './components/BottomNav'
 import { Login } from './pages/Login'
+import { AuthCallback } from './pages/AuthCallback'
 import { Home } from './pages/Home'
 import { ShopMenu } from './pages/ShopMenu'
 import { Cart } from './pages/Cart'
@@ -21,6 +22,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Protected routes with bottom nav */}
       <Route
