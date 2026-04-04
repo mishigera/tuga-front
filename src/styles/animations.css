@@ -1,0 +1,294 @@
+/* ============================================================
+   animations.css — Platform Animations
+   Usa SOLO transform y opacity para garantizar 60fps.
+   Los elementos son visibles por defecto; las clases de
+   animación solo agregan efectos visuales.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   2.1 CSS Custom Properties
+   ------------------------------------------------------------ */
+:root {
+  --anim-duration-fast: 80ms;
+  --anim-duration-normal: 200ms;
+  --anim-duration-page: 280ms;
+  --anim-duration-stagger-restaurant: 60ms;
+  --anim-duration-stagger-menu: 40ms;
+  --anim-easing-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+  --anim-easing-inout: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* ------------------------------------------------------------
+   2.2 Keyframes de transición de página
+   ------------------------------------------------------------ */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes slide-out-left {
+  from { transform: translateX(0);     opacity: 1; }
+  to   { transform: translateX(-100%); opacity: 0; }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+@keyframes slide-out-right {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(100%); opacity: 0; }
+}
+
+/* Clases utilitarias de transición de página */
+.anim-fade-in {
+  animation: fade-in 250ms var(--anim-easing-out) both;
+  will-change: opacity;
+}
+
+.anim-fade-out {
+  animation: fade-out 250ms var(--anim-easing-out) both;
+  will-change: opacity;
+}
+
+.anim-slide-in-right {
+  animation: slide-in-right var(--anim-duration-page) var(--anim-easing-out) both;
+  will-change: transform, opacity;
+}
+
+.anim-slide-out-left {
+  animation: slide-out-left var(--anim-duration-page) var(--anim-easing-out) both;
+  will-change: transform, opacity;
+}
+
+.anim-slide-in-left {
+  animation: slide-in-left var(--anim-duration-page) var(--anim-easing-out) both;
+  will-change: transform, opacity;
+}
+
+.anim-slide-out-right {
+  animation: slide-out-right var(--anim-duration-page) var(--anim-easing-out) both;
+  will-change: transform, opacity;
+}
+
+/* ------------------------------------------------------------
+   2.3 Keyframes de micro-interacciones y componentes
+   ------------------------------------------------------------ */
+@keyframes stagger-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes skeleton-shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+
+@keyframes cart-pulse-anim {
+  0%   { transform: scale(1.0); }
+  50%  { transform: scale(1.03); }
+  100% { transform: scale(1.0); }
+}
+
+@keyframes scale-pulse {
+  0%   { transform: scale(1.0); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1.0); }
+}
+
+@keyframes heart-pulse-anim {
+  0%   { transform: scale(1.0); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1.0); }
+}
+
+@keyframes bottom-nav-mount {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes cart-enter-anim {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1.0); opacity: 1; }
+}
+
+@keyframes cart-exit-anim {
+  from { transform: scale(1.0); opacity: 1; }
+  to   { transform: scale(0.8); opacity: 0; }
+}
+
+@keyframes icon-active-scale {
+  0%   { transform: scale(1.0); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1.0); }
+}
+
+@keyframes icon-tap {
+  from { transform: scale(0.9); }
+  to   { transform: scale(1.0); }
+}
+
+/* Card press feedback */
+.card--pressed {
+  transform: scale(0.98);
+  transition: transform var(--anim-duration-fast) var(--anim-easing-out);
+}
+
+/* Button pulse (add to cart "+") */
+.btn--pulse {
+  animation: scale-pulse var(--anim-duration-normal) var(--anim-easing-inout) both;
+  will-change: transform;
+}
+
+/* Heart / favorite pulse */
+.heart--pulse {
+  animation: heart-pulse-anim 250ms var(--anim-easing-inout) both;
+  will-change: transform;
+}
+
+/* Bottom nav slide-up on first mount — solo opacity para no interferir con translateX(-50%) */
+.bottom-nav--mounted {
+  animation: fade-in 300ms var(--anim-easing-out) both;
+}
+
+/* Skeleton shimmer */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--bg-card, #181B21) 25%,
+    rgba(255, 255, 255, 0.06) 50%,
+    var(--bg-card, #181B21) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s var(--anim-easing-inout) infinite;
+}
+
+/* Cart button enter / exit */
+.cart-enter {
+  animation: cart-enter-anim 250ms var(--anim-easing-out) both;
+  will-change: transform, opacity;
+}
+
+.cart-exit {
+  animation: cart-exit-anim 200ms var(--anim-easing-out) both;
+  will-change: transform, opacity;
+}
+
+/* Cart idle pulse */
+.cart-pulse {
+  animation: cart-pulse-anim 3s var(--anim-easing-inout) infinite;
+  will-change: transform;
+}
+
+/* Stagger list item base */
+.stagger-item {
+  animation: stagger-enter 300ms var(--anim-easing-out) both;
+  will-change: transform, opacity;
+}
+
+/* Category pill transition */
+.category-pill {
+  transition: background-color 150ms var(--anim-easing-out);
+}
+
+/* Icon active scale — solo en el icono del tab activo, sin re-disparar en re-renders */
+.icon--active-scale {
+  animation: icon-active-scale var(--anim-duration-normal) var(--anim-easing-inout) forwards;
+  will-change: transform;
+}
+
+/* Icon tap feedback */
+.icon--tap {
+  animation: icon-tap 120ms var(--anim-easing-out) both;
+  will-change: transform;
+}
+
+/* ------------------------------------------------------------
+   2.4 Reduced motion overrides
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  /* Deshabilitar transiciones de página */
+  .anim-fade-in,
+  .anim-fade-out,
+  .anim-slide-in-right,
+  .anim-slide-out-left,
+  .anim-slide-in-left,
+  .anim-slide-out-right {
+    animation: none;
+    transition: none;
+    will-change: auto;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Deshabilitar stagger */
+  .stagger-item {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
+  /* Reducir micro-interacciones a máximo 50ms */
+  .card--pressed {
+    transition-duration: 50ms;
+  }
+
+  .btn--pulse,
+  .heart--pulse,
+  .icon--active-scale,
+  .icon--tap {
+    animation-duration: 50ms;
+    will-change: auto;
+  }
+
+  /* Deshabilitar bottom nav mount */
+  .bottom-nav--mounted {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+
+  /* Deshabilitar cart pulse */
+  .cart-pulse {
+    animation: none;
+    will-change: auto;
+  }
+
+  /* Cart enter/exit: visibles instantáneamente */
+  .cart-enter,
+  .cart-exit {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
+  /* Skeleton: sin shimmer */
+  .skeleton-shimmer {
+    animation: none;
+    background: var(--bg-card, #181B21);
+  }
+
+  /* Todos los elementos visibles instantáneamente */
+  [class*="anim-"],
+  [class*="stagger-"],
+  [class*="cart-"] {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+}

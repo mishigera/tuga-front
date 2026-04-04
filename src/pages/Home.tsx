@@ -4,6 +4,8 @@ import { Search, ShoppingCart } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { shopsApi } from '../api/shops'
 import { RestaurantCard } from '../components/RestaurantCard'
+import { SkeletonCard } from '../components/SkeletonCard'
+import { useStaggerAnimation } from '../hooks/useStaggerAnimation'
 import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
 
@@ -19,6 +21,14 @@ export function Home() {
   const { data: shops, isLoading, isError } = useQuery({
     queryKey: ['shops'],
     queryFn: shopsApi.getAll,
+  })
+
+  const restaurants = shops ?? []
+  const stagger = useStaggerAnimation({
+    itemCount: restaurants.length,
+    delayMs: 60,
+    durationMs: 300,
+    enabled: !isLoading,
   })
 
   const filtered = shops?.filter((s) =>
@@ -93,6 +103,7 @@ export function Home() {
             <button
               key={cat}
               onClick={() => setCategory(cat)}
+              className="category-pill"
               style={{
                 padding: '8px 16px',
                 borderRadius: 20,
@@ -123,7 +134,13 @@ export function Home() {
           </button>
         </div>
 
-        {isLoading && <div className="spinner" />}
+        {isLoading && (
+          <>
+            <SkeletonCard variant="restaurant" />
+            <SkeletonCard variant="restaurant" />
+            <SkeletonCard variant="restaurant" />
+          </>
+        )}
 
         {isError && (
           <div className="error-state">
@@ -133,7 +150,9 @@ export function Home() {
         )}
 
         {filtered?.map((shop, i) => (
-          <RestaurantCard key={shop._id ?? shop.id ?? i} shop={shop} />
+          <div key={shop._id ?? shop.id ?? i} className={stagger.className} style={stagger.getItemStyle(i)}>
+            <RestaurantCard shop={shop} />
+          </div>
         ))}
 
         {filtered?.length === 0 && !isLoading && (

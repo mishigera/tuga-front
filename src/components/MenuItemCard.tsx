@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useCartStore } from '../store/cartStore'
 import type { Product } from '../types'
@@ -21,6 +22,13 @@ function getProductImage(id: string, imageUri?: string) {
 
 export function MenuItemCard({ product }: Props) {
   const addItem = useCartStore((s) => s.addItem)
+  const [pulse, setPulse] = useState(false)
+
+  function handleAdd() {
+    addItem(product)
+    setPulse(true)
+    setTimeout(() => setPulse(false), 200)
+  }
 
   return (
     <div style={{
@@ -47,7 +55,8 @@ export function MenuItemCard({ product }: Props) {
         </span>
       </div>
       <button
-        onClick={() => addItem(product)}
+        onClick={handleAdd}
+        className={pulse ? 'btn--pulse' : undefined}
         style={{
           background: '#5A8A3A',
           border: 'none',

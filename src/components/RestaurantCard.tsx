@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Heart, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useFavoritesStore } from '../store/authStore'
@@ -25,14 +26,20 @@ export function RestaurantCard({ shop }: Props) {
   const { toggle, isFavorite } = useFavoritesStore()
   const shopId = shop._id ?? shop.id ?? ''
   const fav = isFavorite(shopId)
+  const [pressed, setPressed] = useState(false)
 
   const img = shop.imageUri ?? getPlaceholderImage(shopId)
 
   return (
     <div
-      className="card"
+      className={`card${pressed ? ' card--pressed' : ''}`}
       style={{ cursor: 'pointer', marginBottom: 16 }}
       onClick={() => navigate(`/restaurante/${shopId}`)}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onMouseLeave={() => setPressed(false)}
+      onTouchStart={() => setPressed(true)}
+      onTouchEnd={() => setPressed(false)}
     >
       <div style={{ position: 'relative', height: 160 }}>
         <img
