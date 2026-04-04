@@ -5,6 +5,8 @@ interface AuthUser {
   id: string
   name: string
   email: string
+  picture?: string
+  accessToken: string
 }
 
 interface AuthState {
