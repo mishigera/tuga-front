@@ -59,6 +59,8 @@ export interface CreateOrderPayload {
   phone: string
   quantity: number
   products: string[]
+  latitude?: number
+  longitude?: number
 }
 
 export interface Address {

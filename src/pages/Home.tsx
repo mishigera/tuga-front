@@ -8,6 +8,7 @@ import { SkeletonCard } from '../components/SkeletonCard'
 import { useStaggerAnimation } from '../hooks/useStaggerAnimation'
 import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
+import { AddressPicker } from '../components/addressPicker'
 
 const CATEGORIES = ['Todos', 'Comida', 'Bebidas', 'Postres']
 
@@ -96,6 +97,10 @@ export function Home() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        {/* toggle map view */}
+        <AddressPicker  onSave={ async (result)=>{
+          console.log(result);
+        }}/>
 
         {/* Category Pills */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 20, overflowX: 'auto', paddingBottom: 4 }}>

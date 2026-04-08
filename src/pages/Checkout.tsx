@@ -47,6 +47,8 @@ export function Checkout() {
       phone: phone || '5500000000',
       quantity: items.reduce((sum, i) => sum + i.quantity, 0),
       products: items.flatMap((i) => Array(i.quantity).fill(i.product._id)),
+      latitude: 0, // TODO: geocode address to get lat/lng
+      longitude:0//TODO
     })
   }
 
