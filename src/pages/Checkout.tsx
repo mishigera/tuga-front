@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, CreditCard, ChevronDown, CheckCircle, X } from 'lucide-react'
-import { useMutation } from '@tanstack/react-query'
+import { MapPin, CreditCard, ChevronDown, CheckCircle, X, Plus } from 'lucide-react'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { ordersApi } from '../api/orders'
 import { useCartStore } from '../store/cartStore'
 import { useAuthStore } from '../store/authStore'
@@ -9,6 +9,10 @@ import { useAddressStore } from '../store/addressStore'
 import { useCouponStore } from '../store/couponStore'
 import { applyDiscount } from '../utils/profileUtils'
 import { PageHeader } from '../components/PageHeader'
+import { AddressPicker } from '../components/addressPicker'
+import type { SavedAddress } from '../types'
+
+const ACTIVE_STATUSES = new Set(['pending', 'received', 'cocking', 'shipped', 'delivered'])
 
 export function Checkout() {
   const navigate = useNavigate()
@@ -17,20 +21,34 @@ export function Checkout() {
   const clearCart = useCartStore((s) => s.clearCart)
   const user = useAuthStore((s) => s.user)
 
-  const defaultAddress = useAddressStore((s) => s.getDefault())
   const addresses = useAddressStore((s) => s.addresses)
+  const getFavorite = useAddressStore((s) => s.getFavorite)
+  const addAddress = useAddressStore((s) => s.addAddress)
   const activeCoupon = useCouponStore((s) => s.active)
   const discountedTotal = applyDiscount(total, activeCoupon)
 
-  const [address, setAddress] = useState(
-    defaultAddress
-      ? `${defaultAddress.street}, ${defaultAddress.neighborhood}, ${defaultAddress.city}`
-      : 'Av. Insurgentes Sur 1234, Col. Del Valle, CDMX'
-  )
+  const favorite = getFavorite()
+
+  const [selectedAddress, setSelectedAddress] = useState<SavedAddress | null>(favorite ?? null)
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [showSummary, setShowSummary] = useState(false)
   const [showAddressPicker, setShowAddressPicker] = useState(false)
+
+  // Sync selected address if favorite changes (e.g. after adding first address)
+  useEffect(() => {
+    if (!selectedAddress && favorite) setSelectedAddress(favorite)
+  }, [favorite])
+
+  // Check for active orders
+  const { data: existingOrders } = useQuery({
+    queryKey: ['orders'],
+    queryFn: ordersApi.getAll,
+  })
+
+  const hasActiveOrder = existingOrders?.some(
+    (o) => o.status && ACTIVE_STATUSES.has(o.status)
+  ) ?? false
 
   const { mutate: createOrder, isPending } = useMutation({
     mutationFn: ordersApi.create,
@@ -41,44 +59,88 @@ export function Checkout() {
   })
 
   function handleConfirm() {
+    if (!selectedAddress || hasActiveOrder) return
     createOrder({
       name: user?.name ?? 'Cliente',
-      address,
+      address: selectedAddress.address,
       phone: phone || '5500000000',
       quantity: items.reduce((sum, i) => sum + i.quantity, 0),
       products: items.flatMap((i) => Array(i.quantity).fill(i.product._id)),
-      latitude: 0, // TODO: geocode address to get lat/lng
-      longitude:0//TODO
+      latitude: selectedAddress.latitude,
+      longitude: selectedAddress.longitude,
     })
   }
+
+  const canConfirm = !isPending && items.length > 0 && !!selectedAddress && !hasActiveOrder
 
   return (
     <div className="page--no-nav">
       <PageHeader title="Checkout" />
 
       <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+        {/* Active order banner */}
+        {hasActiveOrder && (
+          <div style={{
+            background: 'rgba(231,76,60,0.1)',
+            border: '1px solid rgba(231,76,60,0.3)',
+            borderRadius: 12,
+            padding: '12px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}>
+            <span style={{ fontSize: 18 }}>🛵</span>
+            <span style={{ fontSize: 13, color: '#E74C3C', fontWeight: 600 }}>
+              Ya tienes un pedido en camino. Espera a que se complete para hacer otro.
+            </span>
+          </div>
+        )}
+
         {/* Delivery address */}
         <div style={{ background: '#181B21', borderRadius: 14, padding: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <span style={{ fontSize: 11, color: '#9A9DA8', textTransform: 'uppercase', letterSpacing: 0.5 }}>
               Dirección de entrega
             </span>
-            <button
-              onClick={() => { if (addresses.length > 0) setShowAddressPicker(true) }}
-              style={{ background: 'none', border: 'none', color: '#5A8A3A', fontSize: 12, fontWeight: 600, cursor: addresses.length > 0 ? 'pointer' : 'default' }}
-            >
-              Cambiar
-            </button>
+            {addresses.length > 0 && (
+              <button
+                onClick={() => setShowAddressPicker(true)}
+                style={{ background: 'none', border: 'none', color: '#5A8A3A', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+              >
+                Cambiar
+              </button>
+            )}
           </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-            <MapPin size={16} color="#5A8A3A" style={{ flexShrink: 0, marginTop: 2 }} />
-            <input
-              className="input"
-              style={{ background: 'transparent', border: 'none', padding: '0', fontSize: 14, color: '#fff' }}
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
+
+          {selectedAddress ? (
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <MapPin size={16} color="#5A8A3A" style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', margin: 0 }}>{selectedAddress.name}</p>
+                <p style={{ fontSize: 12, color: '#9A9DA8', margin: '2px 0 0', lineHeight: 1.4 }}>{selectedAddress.address}</p>
+              </div>
+            </div>
+          ) : (
+            <AddressPicker
+              onSave={(result) => {
+                addAddress({ ...result, favorite: addresses.length === 0 })
+                setSelectedAddress(result)
+              }}
+              trigger={
+                <button
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8, background: 'none',
+                    border: '1px dashed #5A8A3A', borderRadius: 10, padding: '10px 14px',
+                    cursor: 'pointer', color: '#5A8A3A', fontSize: 13, fontWeight: 600, width: '100%',
+                  }}
+                >
+                  <Plus size={15} />
+                  Agregar dirección de entrega
+                </button>
+              }
             />
-          </div>
+          )}
         </div>
 
         {/* Phone */}
@@ -112,15 +174,9 @@ export function Checkout() {
           <button
             onClick={() => setShowSummary(!showSummary)}
             style={{
-              width: '100%',
-              padding: 14,
-              background: 'none',
-              border: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              color: '#fff',
+              width: '100%', padding: 14, background: 'none', border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              cursor: 'pointer', color: '#fff',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -175,7 +231,7 @@ export function Checkout() {
         <button
           className="btn-primary"
           onClick={handleConfirm}
-          disabled={isPending || items.length === 0}
+          disabled={!canConfirm}
           style={{ marginBottom: 16 }}
         >
           <CheckCircle size={18} />
@@ -183,7 +239,7 @@ export function Checkout() {
         </button>
       </div>
 
-      {/* Address picker modal */}
+      {/* Address selector modal */}
       {showAddressPicker && (
         <div
           style={{
@@ -208,21 +264,24 @@ export function Checkout() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {addresses.map((addr) => (
                 <button
-                  key={addr.id}
-                  onClick={() => {
-                    setAddress(`${addr.street}, ${addr.neighborhood}, ${addr.city}`)
-                    setShowAddressPicker(false)
-                  }}
+                  key={addr.name}
+                  onClick={() => { setSelectedAddress(addr); setShowAddressPicker(false) }}
                   style={{
-                    background: '#23272F', border: 'none', borderRadius: 12, padding: 14,
+                    background: selectedAddress?.name === addr.name ? 'rgba(90,138,58,0.1)' : '#23272F',
+                    border: selectedAddress?.name === addr.name ? '1px solid #5A8A3A' : '1px solid transparent',
+                    borderRadius: 12, padding: 14,
                     textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4,
                   }}
                 >
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>
-                    {addr.alias}
-                    {addr.isDefault && <span style={{ marginLeft: 8, fontSize: 11, color: '#5A8A3A' }}>Predeterminada</span>}
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {addr.name}
+                    {addr.favorite && (
+                      <span style={{ fontSize: 10, color: '#5A8A3A', background: 'rgba(90,138,58,0.15)', borderRadius: 6, padding: '1px 6px' }}>
+                        FAVORITA
+                      </span>
+                    )}
                   </span>
-                  <span style={{ fontSize: 12, color: '#9A9DA8' }}>{addr.street}, {addr.neighborhood}, {addr.city}</span>
+                  <span style={{ fontSize: 12, color: '#9A9DA8' }}>{addr.address}</span>
                 </button>
               ))}
             </div>

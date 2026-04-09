@@ -15,8 +15,9 @@ export async function reverseGeocode(
   lat: number,
   lng: number
 ): Promise<ReverseGeocodeResult> {
+  // SDK types incorrectly say string; the API expects [lng, lat] array
   const response = await client
-    .reverseGeocode({ query: `${lng},${lat}` }) // Mapbox: "lng,lat"
+    .reverseGeocode({ query: [lng, lat] as any })
     .send()
 
   const feature = response.body.features[0]

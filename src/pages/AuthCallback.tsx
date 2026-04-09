@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore, useFavoritesStore } from '../store/authStore'
+import { useAddressStore } from '../store/addressStore'
 import { usersApi } from '../api/users'
 
 export function AuthCallback() {
@@ -24,6 +25,9 @@ export function AuthCallback() {
       .then((user) => {
         if (user.favoriteShops) {
           useFavoritesStore.getState().setFavorites(user.favoriteShops)
+        }
+        if (user.addressSaved) {
+          useAddressStore.getState().setAddresses(user.addressSaved)
         }
       })
       .catch(() => {})

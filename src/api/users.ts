@@ -1,12 +1,12 @@
 import { api } from './client'
-import type { User, UserShop } from '../types'
+import type { User, UserShop, SavedAddress } from '../types'
 
 export const usersApi = {
   getAll: () => api.get<User[]>('/users'),
   getById: (id: string) => api.get<User>(`/users/${id}`),
   create: (data: { name: string; email: string; password: string }) =>
     api.post<User>('/users', data),
-  update: (id: string, data: { favoriteShops: string[] }) =>
+  update: (id: string, data: { favoriteShops?: string[]; addressSaved?: SavedAddress[] }) =>
     api.put<User>(`/users/${id}`, data),
 }
 

@@ -1,15 +1,18 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Address } from '../types'
+import type { SavedAddress } from '../types'
+import { usersApi } from '../api/users'
+import { useAuthStore } from './authStore'
 
 interface AddressState {
-  addresses: Address[]
-  setAddresses: (addresses: Address[]) => void
-  addAddress: (address: Address) => void
-  removeAddress: (id: string) => void
-  setDefault: (id: string) => void
-  getDefault: () => Address | undefined
+  addresses: SavedAddress[]
+  setAddresses: (addresses: SavedAddress[]) => void
+  addAddress: (address: SavedAddress) => void
+  removeAddress: (name: string) => void
+  setFavorite: (name: string) => void
+  getFavorite: () => SavedAddress | undefined
 }
+
 
 export const useAddressStore = create<AddressState>()(
   persist(
@@ -18,26 +21,44 @@ export const useAddressStore = create<AddressState>()(
 
       setAddresses: (addresses) => set({ addresses }),
 
-      addAddress: (address) =>
-        set((state) => ({ addresses: [...state.addresses, address] })),
+      addAddress: (address) => {
+        const prev = get().addresses
+        const next = [...prev, address]
+        set({ addresses: next })
+        const sub = useAuthStore.getState().user?.id
+        if (sub) {
+          usersApi.update(sub, { addressSaved: next }).catch(() => {
+            set({ addresses: prev })
+          })
+        }
+      },
 
-      removeAddress: (id) =>
-        set((state) => ({
-          addresses: state.addresses.filter((a) => a.id !== id),
-        })),
+      removeAddress: (name) => {
+        const prev = get().addresses
+        const next = prev.filter((a) => a.name !== name)
+        set({ addresses: next })
+        const sub = useAuthStore.getState().user?.id
+        if (sub) {
+          usersApi.update(sub, { addressSaved: next }).catch(() => {
+            set({ addresses: prev })
+          })
+        }
+      },
 
-      setDefault: (id) =>
-        set((state) => ({
-          addresses: state.addresses.map((a) => ({
-            ...a,
-            isDefault: a.id === id,
-          })),
-        })),
+      setFavorite: (name) => {
+        const prev = get().addresses
+        const next = prev.map((a) => ({ ...a, favorite: a.name === name }))
+        set({ addresses: next })
+        const sub = useAuthStore.getState().user?.id
+        if (sub) {
+          usersApi.update(sub, { addressSaved: next }).catch(() => {
+            set({ addresses: prev })
+          })
+        }
+      },
 
-      getDefault: () => get().addresses.find((a) => a.isDefault),
+      getFavorite: () => get().addresses.find((a) => a.favorite),
     }),
-    {
-      name: 'tuga-addresses',
-    }
+    { name: 'tuga-addresses' }
   )
 )
