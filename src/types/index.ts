@@ -6,6 +6,7 @@ export interface Shop {
   imageUri?: string
   createdAt?: string
   updatedAt?: string
+  categorie?: string
 }
 
 export interface Product {

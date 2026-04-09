@@ -92,7 +92,7 @@ export function Home() {
           </button>
         </div>
         <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6, letterSpacing: -0.5 }}>
-          Hola, {user?.name ?? 'Usuario'} 👋
+          Hola, {user?.name.split(' ')[0] ?? 'Usuario'} 👋 {/* split en el primer espacio para solo mostrar el primer nombre */}
         </h1>
 
         {/* Address widget */}
@@ -133,9 +133,9 @@ export function Home() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-
+        {/* esto aun no es dinamico cuando lo sea agregar TODO */}
         {/* Category Pills */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20, overflowX: 'auto', paddingBottom: 4 }}>
+        {/* <div style={{ display: 'flex', gap: 8, marginBottom: 20, overflowX: 'auto', paddingBottom: 4 }}>
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
@@ -157,7 +157,7 @@ export function Home() {
               {cat}
             </button>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Restaurant List */}
@@ -166,9 +166,9 @@ export function Home() {
           <span style={{ fontSize: 13, fontWeight: 700, color: '#9A9DA8', textTransform: 'uppercase', letterSpacing: 0.5 }}>
             Restaurantes
           </span>
-          <button style={{ background: 'none', border: 'none', color: '#5A8A3A', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          {/* <button style={{ background: 'none', border: 'none', color: '#5A8A3A', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             Ver todos
-          </button>
+          </button> */}
         </div>
 
         {isLoading && (

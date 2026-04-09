@@ -168,6 +168,11 @@ body {
   color: var(--text-secondary);
 }
 
+.badge--cancelled {
+  background: rgba(231, 76, 60, 0.12);
+  color: #E74C3C;
+}
+
 /* Divider */
 .divider {
   height: 1px;

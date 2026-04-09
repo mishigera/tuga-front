@@ -72,7 +72,7 @@ export function RestaurantCard({ shop }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{shop.name}</h3>
           <span className="badge badge--green">
-            {shop.description.split(' ')[0].toUpperCase()}
+            {shop.categorie ?? 'categoría'}
           </span>
         </div>
         <p style={{ fontSize: 13, color: '#9A9DA8', marginBottom: 10, lineHeight: 1.4 }}>
