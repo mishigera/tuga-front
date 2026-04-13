@@ -23,7 +23,7 @@ export function Profile() {
     logout()
     navigate('/login', { replace: true })
   }
-
+  const avatarSrc = user?.picture ?? null
   return (
     <div className="page">
       {/* Header */}
@@ -49,7 +49,10 @@ export function Profile() {
           justifyContent: 'center',
           marginBottom: 14,
         }}>
-          <User size={36} color="#5A8A3A" />
+           {avatarSrc
+              ? <img src={avatarSrc} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              : <User size={36} color="#5A8A3A" />
+            }
         </div>
         <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>
           {user?.name ?? 'Usuario'}

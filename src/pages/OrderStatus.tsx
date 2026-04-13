@@ -50,7 +50,7 @@ export function OrderStatus() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 12px' }}>
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/pedidos')}
           style={{
             background: '#5A8A3A',
             border: 'none',
