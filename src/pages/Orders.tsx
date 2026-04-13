@@ -1,8 +1,20 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingBag, ArrowRight, RefreshCw } from 'lucide-react'
+import { ShoppingBag, ArrowRight, /*RefreshCw*/ } from 'lucide-react'
 import { ordersApi } from '../api/orders'
 import type { Order, Product } from '../types'
+
+const ACTIVE_STATUSES = new Set(['pending', 'received', 'cocking', 'shipped', 'delivered'])
+
+const STATUS_LABEL: Record<string, string> = {
+  pending:   'Pendiente de confirmar',
+  received:  'Recibido por el restaurante',
+  cocking:   'En Preparación',
+  shipped:   'En Camino',
+  delivered: 'Entregado',
+  cancelled: 'Cancelado',
+  success:   'Completado',
+}
 
 function getProductName(p: string | Product) {
   return typeof p === 'string' ? `Producto #${p.slice(-4)}` : p.name
@@ -38,8 +50,8 @@ export function Orders() {
     new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime()
   )
 
-  const active = sorted.slice(0, 1)
-  const previous = sorted.slice(1)
+  const active = sorted.filter((o) => o.status && ACTIVE_STATUSES.has(o.status))
+  const previous = sorted.filter((o) => !o.status || !ACTIVE_STATUSES.has(o.status))
 
   return (
     <div className="page">
@@ -48,7 +60,7 @@ export function Orders() {
         <span style={{ fontSize: 11, color: '#9A9DA8', textTransform: 'uppercase', letterSpacing: 1 }}>
           Mis Pedidos
         </span>
-        {orders && orders.length > 0 && (
+        {/* {orders && orders.length > 0 && (
           <span style={{
             background: '#5A8A3A',
             color: '#fff',
@@ -63,7 +75,7 @@ export function Orders() {
           }}>
             {orders.length}
           </span>
-        )}
+        )} */}
       </div>
 
       {isLoading && <div className="spinner" />}
@@ -98,7 +110,7 @@ export function Orders() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#5A8A3A', fontSize: 13, marginBottom: 12 }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#5A8A3A', display: 'inline-block' }} />
-              En Preparación
+              {STATUS_LABEL[order.status ?? ''] ?? 'En Proceso'}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 14 }}>
               {order.products.slice(0, 3).map((p, i) => (
@@ -138,7 +150,9 @@ export function Orders() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                   <span style={{ fontSize: 14, fontWeight: 600 }}>Pedido #{order._id.slice(-4).toUpperCase()}</span>
-                  <span className="badge badge--done">FINALIZADO</span>
+                  <span className={order.status === 'cancelled' ? 'badge badge--cancelled' : 'badge badge--done'}>
+                    {order.status === 'cancelled' ? 'CANCELADO' : 'COMPLETADO'}
+                  </span>
                 </div>
                 <p style={{ fontSize: 12, color: '#9A9DA8', marginBottom: 8 }}>
                   {formatDate(order.createdAt)}
@@ -151,7 +165,7 @@ export function Orders() {
                   <span style={{ fontSize: 16, fontWeight: 700 }}>
                     ${getOrderTotal(order).toFixed(2)}
                   </span>
-                  <button
+                  {/* <button
                     onClick={() => navigate(`/estado-pedido/${order._id}`)}
                     style={{
                       background: '#252830',
@@ -169,7 +183,7 @@ export function Orders() {
                   >
                     <RefreshCw size={13} />
                     Repetir
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}

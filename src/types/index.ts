@@ -6,6 +6,7 @@ export interface Shop {
   imageUri?: string
   createdAt?: string
   updatedAt?: string
+  categorie?: string
 }
 
 export interface Product {
@@ -26,14 +27,26 @@ export interface Order {
   phone: string
   quantity: number
   products: string[] | Product[]
+  status?: 'pending' | 'received' | 'cocking' | 'shipped' | 'delivered' | 'cancelled' | 'success'
   createdAt?: string
   updatedAt?: string
 }
 
+export interface SavedAddress {
+  name: string
+  address: string
+  latitude: number
+  longitude: number
+  favorite?: boolean
+}
+
 export interface User {
   _id: string
+  sub?: string
   name: string
   email: string
+  favoriteShops?: string[]
+  addressSaved?: SavedAddress[]
   createdAt?: string
   updatedAt?: string
 }
@@ -58,6 +71,8 @@ export interface CreateOrderPayload {
   phone: string
   quantity: number
   products: string[]
+  latitude?: number
+  longitude?: number
 }
 
 export interface Address {

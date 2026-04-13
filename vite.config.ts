@@ -75,6 +75,9 @@ export default defineConfig({
       }
     })
   ],
+  define:{
+    'process.env': {}
+  },
   server: {
     proxy: {
       '/api': {

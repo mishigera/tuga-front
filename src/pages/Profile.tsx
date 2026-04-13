@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import {
-  MapPin, Tag, Bell, Clock, Users, HelpCircle,
+  MapPin, Tag, Bell, Users, HelpCircle, //clock,
   ChevronRight, Settings, User,
 } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
@@ -9,7 +9,7 @@ const MENU_ITEMS = [
   { icon: MapPin, label: 'Mis Direcciones', desc: 'Gestiona tus direcciones de entrega', to: '/perfil/direcciones' },
   { icon: Tag, label: 'Cupones y Promociones', desc: 'Descuentos disponibles para ti', to: '/perfil/cupones' },
   { icon: Bell, label: 'Notificaciones', desc: 'Alertas y preferencias' },
-  { icon: Clock, label: 'Historial de Pedidos', desc: 'Revisa tus pedidos anteriores', to: '/pedidos' },
+  // { icon: Clock, label: 'Historial de Pedidos', desc: 'Revisa tus pedidos anteriores', to: '/pedidos' }, ya tenemos una seccion para eso
   { icon: Users, label: 'Invitar Amigos', desc: 'Comparte y gana descuentos', to: '/perfil/invitar' },
   { icon: HelpCircle, label: 'Ayuda y Soporte', desc: 'Centro de ayuda y contacto', to: '/perfil/soporte' },
 ]
@@ -23,7 +23,7 @@ export function Profile() {
     logout()
     navigate('/login', { replace: true })
   }
-
+  const avatarSrc = user?.picture ?? null
   return (
     <div className="page">
       {/* Header */}
@@ -49,7 +49,10 @@ export function Profile() {
           justifyContent: 'center',
           marginBottom: 14,
         }}>
-          <User size={36} color="#5A8A3A" />
+           {avatarSrc
+              ? <img src={avatarSrc} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              : <User size={36} color="#5A8A3A" />
+            }
         </div>
         <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>
           {user?.name ?? 'Usuario'}

@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '../store/authStore'
+import { useAuthStore, useFavoritesStore } from '../store/authStore'
+import { useAddressStore } from '../store/addressStore'
+import { usersApi } from '../api/users'
 
 export function AuthCallback() {
   const navigate = useNavigate()
@@ -17,13 +19,21 @@ export function AuthCallback() {
       return
     }
 
-    // Persist to store synchronously before navigating
     useAuthStore.getState().login({ id: sub, name, email, picture })
 
-    // Small delay to ensure Zustand persist middleware flushes to localStorage
-    setTimeout(() => {
-      navigate('/', { replace: true })
-    }, 100)
+    usersApi.getById(sub)
+      .then((user) => {
+        if (user.favoriteShops) {
+          useFavoritesStore.getState().setFavorites(user.favoriteShops)
+        }
+        if (user.addressSaved) {
+          useAddressStore.getState().setAddresses(user.addressSaved)
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        navigate('/', { replace: true })
+      })
   }, [])
 
   return (

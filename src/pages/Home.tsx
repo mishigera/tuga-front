@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, ShoppingCart } from 'lucide-react'
+import { Search, ShoppingCart, X, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { shopsApi } from '../api/shops'
 import { RestaurantCard } from '../components/RestaurantCard'
@@ -8,6 +8,10 @@ import { SkeletonCard } from '../components/SkeletonCard'
 import { useStaggerAnimation } from '../hooks/useStaggerAnimation'
 import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
+import { useAddressStore } from '../store/addressStore'
+import { AddressPicker } from '../components/addressPicker'
+import { MapPin } from 'lucide-react'
+import type { SavedAddress } from '../types'
 
 const CATEGORIES = ['Todos', 'Comida', 'Bebidas', 'Postres']
 
@@ -15,8 +19,14 @@ export function Home() {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const totalItems = useCartStore((s) => s.totalItems())
+  const getFavorite = useAddressStore((s) => s.getFavorite)
+  const addAddress = useAddressStore((s) => s.addAddress)
+  const setFavorite = useAddressStore((s) => s.setFavorite)
+  const addresses = useAddressStore((s) => s.addresses)
+  const favoriteAddress = getFavorite()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('Todos')
+  const [showAddressSheet, setShowAddressSheet] = useState(false)
 
   const { data: shops, isLoading, isError } = useQuery({
     queryKey: ['shops'],
@@ -81,9 +91,36 @@ export function Home() {
             )}
           </button>
         </div>
-        <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 20, letterSpacing: -0.5 }}>
-          Hola, {user?.name ?? 'Usuario'} 👋
+        <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6, letterSpacing: -0.5 }}>
+          Hola, {user?.name.split(' ')[0] ?? 'Usuario'} 👋 {/* split en el primer espacio para solo mostrar el primer nombre */}
         </h1>
+
+        {/* Address widget */}
+        {addresses.length > 0 ? (
+          <div
+            onClick={() => setShowAddressSheet(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 18, cursor: 'pointer' }}
+          >
+            <MapPin size={13} color="#5A8A3A" />
+            <span style={{ fontSize: 13, color: '#9A9DA8', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ color: '#fff', fontWeight: 600 }}>{favoriteAddress?.name ?? addresses[0].name}</span>
+              {' · '}
+              {favoriteAddress?.address ?? addresses[0].address}
+            </span>
+          </div>
+        ) : (
+          <AddressPicker
+            onSave={(result: SavedAddress) => {
+              addAddress({ ...result, favorite: true })
+            }}
+            trigger={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 18, cursor: 'pointer' }}>
+                <MapPin size={13} color="#5A5D68" />
+                <span style={{ fontSize: 13, color: '#5A8A3A', fontWeight: 600 }}>+ Agregar dirección</span>
+              </div>
+            }
+          />
+        )}
 
         {/* Search */}
         <div style={{ position: 'relative', marginBottom: 16 }}>
@@ -96,9 +133,9 @@ export function Home() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-
+        {/* esto aun no es dinamico cuando lo sea agregar TODO */}
         {/* Category Pills */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20, overflowX: 'auto', paddingBottom: 4 }}>
+        {/* <div style={{ display: 'flex', gap: 8, marginBottom: 20, overflowX: 'auto', paddingBottom: 4 }}>
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
@@ -120,7 +157,7 @@ export function Home() {
               {cat}
             </button>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Restaurant List */}
@@ -129,9 +166,9 @@ export function Home() {
           <span style={{ fontSize: 13, fontWeight: 700, color: '#9A9DA8', textTransform: 'uppercase', letterSpacing: 0.5 }}>
             Restaurantes
           </span>
-          <button style={{ background: 'none', border: 'none', color: '#5A8A3A', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          {/* <button style={{ background: 'none', border: 'none', color: '#5A8A3A', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             Ver todos
-          </button>
+          </button> */}
         </div>
 
         {isLoading && (
@@ -161,6 +198,72 @@ export function Home() {
           </div>
         )}
       </div>
+      {/* Address selector sheet */}
+      {showAddressSheet && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'flex-end', zIndex: 1000 }}
+          onClick={() => setShowAddressSheet(false)}
+        >
+          <div
+            style={{ background: '#181B21', borderRadius: '16px 16px 0 0', width: '100%', padding: 20, maxHeight: '70vh', overflowY: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>Mis Direcciones</span>
+              <button onClick={() => setShowAddressSheet(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9A9DA8' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {addresses.map((addr) => (
+                <button
+                  key={addr.name}
+                  onClick={() => { setFavorite(addr.name); setShowAddressSheet(false) }}
+                  style={{
+                    background: addr.favorite ? 'rgba(90,138,58,0.1)' : '#23272F',
+                    border: addr.favorite ? '1px solid #5A8A3A' : '1px solid transparent',
+                    borderRadius: 12, padding: 14,
+                    textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {addr.name}
+                    {addr.favorite && (
+                      <span style={{ fontSize: 10, color: '#5A8A3A', background: 'rgba(90,138,58,0.15)', borderRadius: 6, padding: '1px 6px' }}>
+                        FAVORITA
+                      </span>
+                    )}
+                  </span>
+                  <span style={{ fontSize: 12, color: '#9A9DA8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {addr.address}
+                  </span>
+                </button>
+              ))}
+
+              <AddressPicker
+                onSave={(result: SavedAddress) => {
+                  addAddress({ ...result, favorite: false })
+                  setShowAddressSheet(false)
+                }}
+                trigger={
+                  <button
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      background: 'transparent', border: '1.5px dashed #5A8A3A',
+                      borderRadius: 12, padding: '12px 16px', cursor: 'pointer',
+                      color: '#5A8A3A', fontSize: 13, fontWeight: 600, width: '100%',
+                    }}
+                  >
+                    <Plus size={15} />
+                    Agregar dirección
+                  </button>
+                }
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
