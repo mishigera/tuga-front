@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Minus } from 'lucide-react'
 import { useCartStore } from '../store/cartStore'
 import type { Product } from '../types'
 
@@ -22,12 +22,21 @@ function getProductImage(id: string, imageUri?: string) {
 
 export function MenuItemCard({ product }: Props) {
   const addItem = useCartStore((s) => s.addItem)
+  const updateQuantity = useCartStore((s) => s.updateQuantity)
+  const quantity = useCartStore((s) => {
+    const item = s.items.find((i) => i.product._id === product._id)
+    return item?.quantity ?? 0
+  })
   const [pulse, setPulse] = useState(false)
 
   function handleAdd() {
     addItem(product)
     setPulse(true)
     setTimeout(() => setPulse(false), 200)
+  }
+
+  function handleRemove() {
+    updateQuantity(product._id, quantity - 1)
   }
 
   return (
@@ -54,24 +63,76 @@ export function MenuItemCard({ product }: Props) {
           ${product.price.toFixed(2)}
         </span>
       </div>
-      <button
-        onClick={handleAdd}
-        className={pulse ? 'btn--pulse' : undefined}
-        style={{
-          background: '#5A8A3A',
-          border: 'none',
-          borderRadius: 10,
-          width: 32,
-          height: 32,
+      {quantity === 0 ? (
+        <button
+          onClick={handleAdd}
+          className={pulse ? 'btn--pulse' : undefined}
+          style={{
+            background: '#5A8A3A',
+            border: 'none',
+            borderRadius: 10,
+            width: 32,
+            height: 32,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+        >
+          <Plus size={18} color="#fff" strokeWidth={2.5} />
+        </button>
+      ) : (
+        <div style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
+          gap: 8,
           flexShrink: 0,
-        }}
-      >
-        <Plus size={18} color="#fff" strokeWidth={2.5} />
-      </button>
+        }}>
+          <button
+            onClick={handleRemove}
+            style={{
+              background: '#252830',
+              border: 'none',
+              borderRadius: 10,
+              width: 28,
+              height: 28,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <Minus size={14} color="#fff" strokeWidth={2.5} />
+          </button>
+          <span style={{
+            fontSize: 14,
+            fontWeight: 700,
+            color: '#fff',
+            minWidth: 18,
+            textAlign: 'center',
+          }}>
+            {quantity}
+          </span>
+          <button
+            onClick={handleAdd}
+            className={pulse ? 'btn--pulse' : undefined}
+            style={{
+              background: '#5A8A3A',
+              border: 'none',
+              borderRadius: 10,
+              width: 28,
+              height: 28,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <Plus size={14} color="#fff" strokeWidth={2.5} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

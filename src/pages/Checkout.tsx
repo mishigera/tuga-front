@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, CreditCard, ChevronDown, CheckCircle, X, Plus } from 'lucide-react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ordersApi } from '../api/orders'
 import { useCartStore } from '../store/cartStore'
 import { useAuthStore } from '../store/authStore'
@@ -16,6 +16,7 @@ const ACTIVE_STATUSES = new Set(['pending', 'received', 'cocking', 'shipped', 'd
 
 export function Checkout() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const items = useCartStore((s) => s.items)
   const total = useCartStore((s) => s.total())
   const clearCart = useCartStore((s) => s.clearCart)
@@ -54,18 +55,23 @@ export function Checkout() {
     mutationFn: ordersApi.create,
     onSuccess: (order) => {
       clearCart()
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
       navigate(`/estado-pedido/${order._id}`)
     },
   })
 
   function handleConfirm() {
-    if (!selectedAddress || hasActiveOrder) return
+    if (!selectedAddress || hasActiveOrder || !user) return
+    const firstShop = items[0]?.product.shop
+    const shopId = typeof firstShop === 'string' ? firstShop : firstShop?._id ?? ''
     createOrder({
-      name: user?.name ?? 'Cliente',
+      name: user.name,
       address: selectedAddress.address,
       phone: phone || '5500000000',
       quantity: items.reduce((sum, i) => sum + i.quantity, 0),
       products: items.flatMap((i) => Array(i.quantity).fill(i.product._id)),
+      shop: shopId,
+      user: user.id,
       latitude: selectedAddress.latitude,
       longitude: selectedAddress.longitude,
     })

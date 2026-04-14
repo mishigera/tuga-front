@@ -44,6 +44,7 @@ export function Orders() {
     queryKey: ['orders'],
     queryFn: ordersApi.getAll,
     refetchInterval: 30000,
+    refetchOnMount: 'always',
   })
 
   const sorted = [...(orders ?? [])].sort((a, b) =>

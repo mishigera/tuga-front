@@ -27,6 +27,8 @@ export interface Order {
   phone: string
   quantity: number
   products: string[] | Product[]
+  shop?: string | Shop
+  user?: string | User
   status?: 'pending' | 'received' | 'cocking' | 'shipped' | 'delivered' | 'cancelled' | 'success'
   createdAt?: string
   updatedAt?: string
@@ -45,6 +47,7 @@ export interface User {
   sub?: string
   name: string
   email: string
+  picture?: string
   favoriteShops?: string[]
   addressSaved?: SavedAddress[]
   createdAt?: string
@@ -71,6 +74,8 @@ export interface CreateOrderPayload {
   phone: string
   quantity: number
   products: string[]
+  shop: string
+  user: string
   latitude?: number
   longitude?: number
 }

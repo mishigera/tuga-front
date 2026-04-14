@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle, Clock, Truck, ChevronDown, ChevronLeft } from 'lucide-react'
 import { ordersApi } from '../api/orders'
-import type { Product } from '../types'
+import { normalize } from '../api/client'
+import type { Order, Product } from '../types'
 
 type StepKey = 'confirmed' | 'preparing' | 'delivery'
 
@@ -14,26 +16,77 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  { key: 'confirmed', label: 'Pedido Confirmado', icon: CheckCircle, description: 'Hoy, 14:23' },
+  { key: 'confirmed', label: 'Pedido Confirmado', icon: CheckCircle, description: 'Confirmado por el restaurante' },
   { key: 'preparing', label: 'En Preparación', icon: Clock, description: 'Estimado: 10-15 min' },
-  { key: 'delivery', label: 'En Reparto', icon: Truck, description: 'Pendiente' },
+  { key: 'delivery', label: 'En Reparto', icon: Truck, description: 'En camino a tu dirección' },
 ]
 
-const STATUS_ORDER: StepKey[] = ['confirmed', 'preparing', 'delivery']
+const TERMINAL_STATUSES = new Set(['delivered', 'success', 'cancelled'])
+
+function statusToIndex(status?: string): number {
+  switch (status) {
+    case 'received': return 1
+    case 'cocking':  return 1
+    case 'shipped':  return 2
+    case 'delivered':
+    case 'success':  return 3
+    case 'pending':
+    default:         return 0
+  }
+}
 
 export function OrderStatus() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const { data: order, isLoading } = useQuery({
+  const queryClient = useQueryClient()
+
+  const { data: order, isLoading, isError } = useQuery({
     queryKey: ['order', id],
     queryFn: () => ordersApi.getById(id!),
     enabled: !!id,
-    refetchInterval: 30000,
   })
 
-  const currentStep: StepKey = 'preparing'
-  const currentIndex = STATUS_ORDER.indexOf(currentStep)
+  // SSE via EventSource. Backend sends:
+  // "data: " + JSON.stringify({ order_update: orderId, order }) + "\n\n"
+  useEffect(() => {
+    const orderId = order?._id
+    if (!id || !orderId) return
+    if (TERMINAL_STATUSES.has(order.status ?? '')) return
+
+    let errorCount = 0
+    const MAX_RETRIES = 3
+
+    const es = new EventSource(`/api/orders/notifications/${id}`)
+
+    es.onmessage = (event: MessageEvent) => {
+      errorCount = 0
+      try {
+        const { order: updated } = JSON.parse(event.data) as {
+          order_update: string
+          order: Order
+        }
+        queryClient.setQueryData(['order', id], normalize(updated))
+        if (updated.status && TERMINAL_STATUSES.has(updated.status)) {
+          es.close()
+        }
+      } catch {
+        // malformed message — ignore
+      }
+    }
+
+    es.onerror = () => {
+      errorCount++
+      if (errorCount >= MAX_RETRIES) {
+        es.close()
+      }
+    }
+
+    return () => es.close()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, order?._id, queryClient])
+
+  const currentIndex = statusToIndex(order?.status)
 
   const orderNumber = id?.slice(-4).toUpperCase() ?? '0000'
 
@@ -70,6 +123,13 @@ export function OrderStatus() {
 
       {isLoading ? (
         <div className="spinner" />
+      ) : isError ? (
+        <div className="error-state">
+          <p style={{ fontWeight: 600 }}>No se pudo cargar el pedido</p>
+          <button className="btn-secondary" style={{ marginTop: 8, width: 'auto', padding: '10px 20px' }} onClick={() => navigate('/pedidos')}>
+            Ver mis pedidos
+          </button>
+        </div>
       ) : (
         <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Order number */}
@@ -81,6 +141,13 @@ export function OrderStatus() {
               #{orderNumber}
             </div>
           </div>
+
+          {/* Cancelled banner */}
+          {order?.status === 'cancelled' && (
+            <div style={{ background: 'rgba(231,76,60,0.1)', border: '1px solid rgba(231,76,60,0.3)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
+              <span style={{ color: '#E74C3C', fontWeight: 700, fontSize: 15 }}>Pedido Cancelado</span>
+            </div>
+          )}
 
           {/* Steps */}
           <div style={{ background: '#181B21', borderRadius: 14, padding: '16px 20px' }}>

@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore'
 const BASE_URL = '/api'
 
 // Mongoose sometimes serializes _id as `id` (virtual). Normalize to _id.
-function normalize<T>(data: T): T {
+export function normalize<T>(data: T): T {
   if (Array.isArray(data)) return data.map(normalize) as T
   if (data && typeof data === 'object') {
     const obj = data as Record<string, unknown>

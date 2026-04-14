@@ -71,7 +71,7 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true
+        enabled: false  // SW interfiere con SSE (streams infinitos) en dev
       }
     })
   ],

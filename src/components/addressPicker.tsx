@@ -80,7 +80,7 @@ export function AddressPicker({ onSave, trigger }: AddressPickerProps) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Handle + Header */}
-            <div style={{ padding: '12px 16px 0', flexShrink: 0 }}>
+            <div style={{ padding: '12px 16px 0', flexShrink: 0,  }}>
               <div style={{ width: 36, height: 4, background: '#2A2D35', borderRadius: 2, margin: '0 auto 14px' }} />
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <span style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>Seleccionar ubicación</span>
