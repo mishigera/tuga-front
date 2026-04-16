@@ -5,7 +5,16 @@
       "Bash(npx tsc:*)",
       "Bash(npm run:*)",
       "Bash(openspec status:*)",
-      "Bash(openspec instructions:*)"
+      "Bash(openspec instructions:*)",
+      "Bash(find .:*)",
+      "Bash(find:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in d.get\\('dependencies',{}\\).items\\(\\) if 'express' in k or 'http-proxy' in k or 'connect' in k},indent=2\\)\\); print\\('---scripts---'\\); print\\(json.dumps\\(d.get\\('scripts',{}\\),indent=2\\)\\)\")",
+      "Bash(npx vite:*)",
+      "Bash(npm outdated:*)",
+      "Bash(git stash:*)",
+      "Bash(lsof -ti:5173)",
+      "Bash(xargs kill:*)",
+      "Bash(xargs ps:*)"
     ]
   }
 }

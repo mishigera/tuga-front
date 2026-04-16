@@ -43,6 +43,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MB
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
@@ -79,6 +80,17 @@ export default defineConfig({
     'process.env': {}
   },
   server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        cookieDomainRewrite: 'localhost',
+      }
+    }
+  },
+  preview: {
+    port: 4173,
     proxy: {
       '/api': {
         target: 'http://localhost:3000',

@@ -11,7 +11,7 @@ import { useFavoritesStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
 import { useStaggerAnimation } from '../hooks/useStaggerAnimation'
 
-const TABS = ['Popular', 'Hamburguesas', 'Bebidas', 'Postres']
+//const TABS = ['Popular', 'Hamburguesas', 'Bebidas', 'Postres']
 
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80',
@@ -22,7 +22,7 @@ const HERO_IMAGES = [
 export function ShopMenu() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [tab, setTab] = useState('Popular')
+  //const [tab, setTab] = useState('Popular')
   const [heartPulse, setHeartPulse] = useState(false)
   const [cartAnimClass, setCartAnimClass] = useState('')
   const prevTotalItemsRef = useRef(0)
@@ -42,13 +42,14 @@ export function ShopMenu() {
   })
 
   const fav = isFavorite(id ?? '')
-  const heroImg = HERO_IMAGES[(id?.charCodeAt(id.length - 1) ?? 0) % HERO_IMAGES.length]
+  const heroImg = shop?.imageuri || HERO_IMAGES[(id?.charCodeAt(id.length - 1) ?? 0) % HERO_IMAGES.length]
 
   const stagger = useStaggerAnimation({
     itemCount: products?.length ?? 0,
     delayMs: 40,
     durationMs: 300,
     enabled: !isLoading,
+    key: `shop-products-${id}`,
   })
 
   useEffect(() => {
@@ -134,7 +135,7 @@ export function ShopMenu() {
         </p>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #252830', marginBottom: 4 }}>
+        {/* <div style={{ display: 'flex', borderBottom: '1px solid #252830', marginBottom: 4 }}>
           {TABS.map((t) => (
             <button
               key={t}
@@ -156,7 +157,7 @@ export function ShopMenu() {
               {t}
             </button>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Products */}

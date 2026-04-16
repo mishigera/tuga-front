@@ -69,6 +69,7 @@ export function AddressPicker({ onSave, trigger }: AddressPickerProps) {
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
             zIndex: 2000, display: 'flex', alignItems: 'flex-end',
+            maxWidth: 430, margin: '0 auto',
           }}
           onClick={(e) => { if (e.target === e.currentTarget) close() }}
         >

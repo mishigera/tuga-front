@@ -68,3 +68,6 @@ dev-dist/
 CLAUDE.md
 openspec
 .claude/
+
+
+dist/

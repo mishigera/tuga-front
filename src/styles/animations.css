@@ -113,11 +113,6 @@
   100% { transform: scale(1.0); }
 }
 
-@keyframes bottom-nav-mount {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
 @keyframes cart-enter-anim {
   from { transform: scale(0.8); opacity: 0; }
   to   { transform: scale(1.0); opacity: 1; }
@@ -126,12 +121,6 @@
 @keyframes cart-exit-anim {
   from { transform: scale(1.0); opacity: 1; }
   to   { transform: scale(0.8); opacity: 0; }
-}
-
-@keyframes icon-active-scale {
-  0%   { transform: scale(1.0); }
-  50%  { transform: scale(1.15); }
-  100% { transform: scale(1.0); }
 }
 
 @keyframes icon-tap {
@@ -157,10 +146,6 @@
   will-change: transform;
 }
 
-/* Bottom nav slide-up on first mount — solo opacity para no interferir con translateX(-50%) */
-.bottom-nav--mounted {
-  animation: fade-in 300ms var(--anim-easing-out) both;
-}
 
 /* Skeleton shimmer */
 .skeleton-shimmer {
@@ -202,12 +187,6 @@
   transition: background-color 150ms var(--anim-easing-out);
 }
 
-/* Icon active scale — solo en el icono del tab activo, sin re-disparar en re-renders */
-.icon--active-scale {
-  animation: icon-active-scale var(--anim-duration-normal) var(--anim-easing-inout) forwards;
-  will-change: transform;
-}
-
 /* Icon tap feedback */
 .icon--tap {
   animation: icon-tap 120ms var(--anim-easing-out) both;
@@ -247,16 +226,8 @@
 
   .btn--pulse,
   .heart--pulse,
-  .icon--active-scale,
   .icon--tap {
     animation-duration: 50ms;
-    will-change: auto;
-  }
-
-  /* Deshabilitar bottom nav mount */
-  .bottom-nav--mounted {
-    animation: none;
-    transform: none;
     will-change: auto;
   }
 

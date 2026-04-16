@@ -28,7 +28,7 @@ export function RestaurantCard({ shop }: Props) {
   const fav = isFavorite(shopId)
   const [pressed, setPressed] = useState(false)
 
-  const img = shop.imageUri ?? getPlaceholderImage(shopId)
+  const img = shop.imageuri || getPlaceholderImage(shopId)
 
   return (
     <div

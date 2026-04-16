@@ -251,6 +251,7 @@ export function Checkout() {
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
             display: 'flex', alignItems: 'flex-end', zIndex: 1000,
+            maxWidth: 430, margin: '0 auto',
           }}
           onClick={() => setShowAddressPicker(false)}
         >

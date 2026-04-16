@@ -13,7 +13,7 @@ import { AddressPicker } from '../components/addressPicker'
 import { MapPin } from 'lucide-react'
 import type { SavedAddress } from '../types'
 
-const CATEGORIES = ['Todos', 'Comida', 'Bebidas', 'Postres']
+// const CATEGORIES = ['Todos', 'Comida', 'Bebidas', 'Postres']
 
 export function Home() {
   const navigate = useNavigate()
@@ -25,7 +25,7 @@ export function Home() {
   const addresses = useAddressStore((s) => s.addresses)
   const favoriteAddress = getFavorite()
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('Todos')
+  // const [category, setCategory] = useState('Todos')
   const [showAddressSheet, setShowAddressSheet] = useState(false)
 
   const { data: shops, isLoading, isError } = useQuery({
@@ -39,6 +39,7 @@ export function Home() {
     delayMs: 60,
     durationMs: 300,
     enabled: !isLoading,
+    key: 'home-shops',
   })
 
   const filtered = shops?.filter((s) =>
@@ -201,7 +202,7 @@ export function Home() {
       {/* Address selector sheet */}
       {showAddressSheet && (
         <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'flex-end', zIndex: 1000 }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'flex-end', zIndex: 1000, maxWidth: 430, margin: '0 auto' }}
           onClick={() => setShowAddressSheet(false)}
         >
           <div

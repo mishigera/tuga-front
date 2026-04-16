@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { NavLink } from 'react-router-dom'
+import { useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import { Home, Heart, ShoppingBag, User } from 'lucide-react'
 import { useCartStore } from '../store/cartStore'
 
@@ -10,23 +10,21 @@ const NAV_ITEMS = [
   { to: '/perfil', icon: User, label: 'Perfil' },
 ]
 
-export function BottomNav() {
-  const totalItems = useCartStore((s) => s.totalItems())
-  const [mounted, setMounted] = useState(false)
-  const [tappedItem, setTappedItem] = useState<string | null>(null)
+const TAB_ROUTES = new Set(['/', '/favoritos', '/pedidos', '/perfil'])
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+export function BottomNav() {
+  const { pathname } = useLocation()
+  const visible = TAB_ROUTES.has(pathname)
+  const totalItems = useCartStore((s) => s.totalItems())
+  const [tappedItem, setTappedItem] = useState<string | null>(null)
 
   return (
     <nav
-      className={mounted ? 'bottom-nav--mounted' : undefined}
       style={{
         position: 'fixed',
         bottom: 0,
         left: '50%',
-        transform: 'translateX(-50%)',
+        transform: visible ? 'translateX(-50%)' : 'translateX(-50%) translateY(100%)',
         width: '100%',
         maxWidth: 430,
         background: '#181B21',
@@ -34,6 +32,7 @@ export function BottomNav() {
         display: 'flex',
         paddingBottom: 'env(safe-area-inset-bottom)',
         zIndex: 100,
+        transition: 'transform 200ms ease-out',
       }}
     >
       {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
@@ -64,11 +63,8 @@ export function BottomNav() {
               <div style={{ position: 'relative' }}>
                 <Icon
                   size={22}
-                  strokeWidth={isActive ? 2.5 : 1.8}
-                  className={[
-                    isActive ? 'icon--active-scale' : '',
-                    tappedItem === to ? 'icon--tap' : '',
-                  ].filter(Boolean).join(' ') || undefined}
+                  strokeWidth={2}
+                  className={tappedItem === to ? 'icon--tap' : undefined}
                 />
                 {label === 'Pedidos' && totalItems > 0 && (
                   <span style={{
@@ -101,7 +97,6 @@ export function BottomNav() {
                   height: 2,
                   background: '#5A8A3A',
                   borderRadius: '0 0 4px 4px',
-                  transition: 'transform 200ms ease-in-out',
                 }} />
               )}
             </>

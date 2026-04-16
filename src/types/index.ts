@@ -3,10 +3,11 @@ export interface Shop {
   id?: string        // Mongoose virtual alias for _id
   name: string
   description: string
-  imageUri?: string
+  imageuri?: string
   createdAt?: string
   updatedAt?: string
   categorie?: string
+  isOpen?: boolean
 }
 
 export interface Product {
