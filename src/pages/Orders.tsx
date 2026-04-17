@@ -49,9 +49,12 @@ export function Orders() {
   const sorted = [...(orders ?? [])].sort((a, b) =>
     new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime()
   )
+  const recent = sorted.slice(0, 10)
 
-  const active = sorted.filter((o) => o.status && ACTIVE_STATUSES.has(o.status))
-  const previous = sorted.filter((o) => !o.status || !ACTIVE_STATUSES.has(o.status))
+  const active = recent.filter((o) => o.status && ACTIVE_STATUSES.has(o.status))
+  const previous = recent
+    .filter((o) => !o.status || !ACTIVE_STATUSES.has(o.status))
+    .reverse()
 
   return (
     <div className="page">

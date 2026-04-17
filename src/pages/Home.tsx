@@ -42,10 +42,12 @@ export function Home() {
     key: 'home-shops',
   })
 
-  const filtered = shops?.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    s.description.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = shops
+    ?.filter((s) =>
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.description.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => (b.isOpen === false ? 0 : 1) - (a.isOpen === false ? 0 : 1))
 
   return (
     <div className="page">

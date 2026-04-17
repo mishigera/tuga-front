@@ -1,21 +1,21 @@
-import { useEffect, useState } from 'react'
-import { Phone, Send, CheckCircle } from 'lucide-react'
+import { /*useEffect,*/ useState } from 'react'
+import {  Send, CheckCircle, CameraIcon } from 'lucide-react'
 import { supportService } from '../api/supportService'
 import { PageHeader } from '../components/PageHeader'
-import type { SupportPhone, FeedbackPayload } from '../types'
+import type { /*SupportPhone,*/ FeedbackPayload } from '../types'
 
 const MAX_CHARS = 500
 
 export function SupportCenter() {
-  const [phones, setPhones] = useState<SupportPhone[]>([])
+  // const [phones, setPhones] = useState<SupportPhone[]>([])
   const [subject, setSubject] = useState<FeedbackPayload['subject']>('queja')
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
 
-  useEffect(() => {
-    supportService.getPhoneNumbers().then(setPhones)
-  }, [])
+  // useEffect(() => {
+  //   supportService.getPhoneNumbers().then(setPhones)
+  // }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -42,10 +42,12 @@ export function SupportCenter() {
           Contáctanos
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {phones.map((p) => (
+            {/* Instagram */}
             <a
-              key={p.number}
-              href={`tel:${p.number}`}
+              key="instagram"
+              href="https://www.instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -66,14 +68,13 @@ export function SupportCenter() {
                 justifyContent: 'center',
                 flexShrink: 0,
               }}>
-                <Phone size={18} color="#5A8A3A" />
+                <CameraIcon size={18} color="#5A8A3A" />
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 2 }}>{p.label}</div>
-                <div style={{ fontSize: 13, color: '#9A9DA8' }}>{p.number}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 2 }}>Instagram</div>
+                <div style={{ fontSize: 13, color: '#9A9DA8' }}>@Tuga_App</div>
               </div>
             </a>
-          ))}
         </div>
       </div>
 

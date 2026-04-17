@@ -29,12 +29,13 @@ export function RestaurantCard({ shop }: Props) {
   const [pressed, setPressed] = useState(false)
 
   const img = shop.imageuri || getPlaceholderImage(shopId)
+  const closed = shop.isOpen === false
 
   return (
     <div
       className={`card${pressed ? ' card--pressed' : ''}`}
-      style={{ cursor: 'pointer', marginBottom: 16 }}
-      onClick={() => navigate(`/restaurante/${shopId}`)}
+      style={{ cursor: closed ? 'default' : 'pointer', marginBottom: 16, opacity: closed ? 0.5 : 1, pointerEvents: closed ? 'none' : 'auto' }}
+      onClick={() => !closed && navigate(`/restaurante/${shopId}`)}
       onMouseDown={() => setPressed(true)}
       onMouseUp={() => setPressed(false)}
       onMouseLeave={() => setPressed(false)}
@@ -47,6 +48,25 @@ export function RestaurantCard({ shop }: Props) {
           alt={shop.name}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
+        {closed && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.4)',
+          }}>
+            <span style={{
+              background: 'rgba(14,16,20,0.85)',
+              color: '#E74C3C',
+              fontSize: 14,
+              fontWeight: 700,
+              padding: '6px 16px',
+              borderRadius: 8,
+              letterSpacing: 0.5,
+            }}>
+              Cerrado
+            </span>
+          </div>
+        )}
         <button
           onClick={(e) => { e.stopPropagation(); toggle(shopId) }}
           style={{
@@ -72,7 +92,7 @@ export function RestaurantCard({ shop }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{shop.name}</h3>
           <span className="badge badge--green">
-            {shop.categorie ?? 'categoría'}
+            {shop.categories ?? 'categoría'}
           </span>
         </div>
         <p style={{ fontSize: 13, color: '#9A9DA8', marginBottom: 10, lineHeight: 1.4 }}>

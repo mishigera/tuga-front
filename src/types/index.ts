@@ -6,7 +6,7 @@ export interface Shop {
   imageuri?: string
   createdAt?: string
   updatedAt?: string
-  categorie?: string
+  categories?: string
   isOpen?: boolean
 }
 
@@ -16,6 +16,7 @@ export interface Product {
   description: string
   price: number
   imageUri?: string
+  categories?: string[]
   shop: string | Shop
   createdAt?: string
   updatedAt?: string

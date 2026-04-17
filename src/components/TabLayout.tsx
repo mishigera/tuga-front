@@ -1,5 +1,6 @@
 import { useLocation, Routes, Route } from 'react-router-dom'
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Home } from '../pages/Home'
 import { Favorites } from '../pages/Favorites'
 import { Orders } from '../pages/Orders'
@@ -23,13 +24,31 @@ const TABS = [
   { path: '/perfil', Component: Profile },
 ]
 
+// Map tab paths to the query keys they use
+const TAB_QUERIES: Record<string, string[][]> = {
+  '/':          [['shops']],
+  '/favoritos': [['shops']],
+  '/pedidos':   [['orders']],
+  '/perfil':    [],
+}
+
 export function TabLayout() {
   const { pathname } = useLocation()
   const isTab = TAB_PATHS.has(pathname)
+  const queryClient = useQueryClient()
 
   // Track which tabs have been visited — only mount on first visit
   const visitedRef = useRef(new Set<string>())
   if (isTab) visitedRef.current.add(pathname)
+
+  // Refetch queries in background when switching to a tab
+  useEffect(() => {
+    if (!isTab) return
+    const queries = TAB_QUERIES[pathname]
+    queries?.forEach((key) => {
+      queryClient.invalidateQueries({ queryKey: key })
+    })
+  }, [pathname, isTab, queryClient])
 
   return (
     <>

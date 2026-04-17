@@ -11,8 +11,6 @@ import { useFavoritesStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
 import { useStaggerAnimation } from '../hooks/useStaggerAnimation'
 
-//const TABS = ['Popular', 'Hamburguesas', 'Bebidas', 'Postres']
-
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80',
   'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80',
@@ -22,7 +20,7 @@ const HERO_IMAGES = [
 export function ShopMenu() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  //const [tab, setTab] = useState('Popular')
+  const [tab, setTab] = useState('Todos')
   const [heartPulse, setHeartPulse] = useState(false)
   const [cartAnimClass, setCartAnimClass] = useState('')
   const prevTotalItemsRef = useRef(0)
@@ -43,6 +41,12 @@ export function ShopMenu() {
 
   const fav = isFavorite(id ?? '')
   const heroImg = shop?.imageuri || HERO_IMAGES[(id?.charCodeAt(id.length - 1) ?? 0) % HERO_IMAGES.length]
+
+  const uniqueCategories = [...new Set(products?.flatMap((p) => p.categories ?? []))]
+  const tabs = ['Todos', ...uniqueCategories]
+  const filtered = tab === 'Todos'
+    ? products
+    : products?.filter((p) => p.categories?.includes(tab))
 
   const stagger = useStaggerAnimation({
     itemCount: products?.length ?? 0,
@@ -125,7 +129,7 @@ export function ShopMenu() {
           {shop?.name ?? 'Cargando...'}
         </h1>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-          <span className="badge badge--green">Hamburguesas</span>
+          <span className="badge badge--green">{shop?.categories ?? 'Restaurante'}</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#9A9DA8', fontSize: 13 }}>
             <Clock size={13} /> 25-35 min
           </span>
@@ -135,29 +139,31 @@ export function ShopMenu() {
         </p>
 
         {/* Tabs */}
-        {/* <div style={{ display: 'flex', borderBottom: '1px solid #252830', marginBottom: 4 }}>
-          {TABS.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              style={{
-                flex: 1,
-                padding: '10px 4px',
-                border: 'none',
-                background: 'none',
-                color: tab === t ? '#5A8A3A' : '#9A9DA8',
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-                borderBottom: tab === t ? '2px solid #5A8A3A' : '2px solid transparent',
-                marginBottom: -1,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {t}
-            </button>
-          ))}
-        </div> */}
+        {tabs.length > 1 && (
+          <div className="tabs-scroll" style={{ display: 'flex', overflowX: 'auto', borderBottom: '1px solid #252830', marginBottom: 4, WebkitOverflowScrolling: 'touch' }}>
+            {tabs.map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                style={{
+                  padding: '10px 14px',
+                  border: 'none',
+                  background: 'none',
+                  color: tab === t ? '#5A8A3A' : '#9A9DA8',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  borderBottom: tab === t ? '2px solid #5A8A3A' : '2px solid transparent',
+                  marginBottom: -1,
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Products */}
@@ -169,12 +175,12 @@ export function ShopMenu() {
           <SkeletonCard variant="menu-item" />
         </>
       )}
-      {products?.map((p, i) => (
+      {filtered?.map((p, i) => (
         <div key={p._id} className={stagger.className} style={stagger.getItemStyle(i)}>
           <MenuItemCard product={p} />
         </div>
       ))}
-      {products?.length === 0 && !isLoading && (
+      {filtered?.length === 0 && !isLoading && (
         <div className="error-state">
           <p>Sin productos disponibles.</p>
         </div>

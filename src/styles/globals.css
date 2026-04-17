@@ -64,8 +64,13 @@ body {
 
 /* Scrollbar hidden */
 .page::-webkit-scrollbar,
-.page--no-nav::-webkit-scrollbar {
+.page--no-nav::-webkit-scrollbar,
+.tabs-scroll::-webkit-scrollbar {
   display: none;
+}
+
+.tabs-scroll {
+  scrollbar-width: none;
 }
 
 /* Buttons */
