@@ -7,11 +7,11 @@ import type { Order, Product } from '../types'
 const ACTIVE_STATUSES = new Set(['pending', 'received', 'cocking', 'shipped', 'delivered'])
 
 const STATUS_LABEL: Record<string, string> = {
-  pending:   'Pendiente de confirmar',
-  received:  'Recibido por el restaurante',
+  pending:   'A la espera de confirmación',
+  received:  'Pedido Confirmado',
   cocking:   'En Preparación',
-  shipped:   'En Camino',
-  delivered: 'Entregado',
+  shipped:   'Listo para enviar',
+  delivered: 'Enviado',
   cancelled: 'Cancelado',
   success:   'Completado',
 }

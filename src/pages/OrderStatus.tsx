@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, Clock, Truck, ChevronDown, ChevronLeft } from 'lucide-react'
+import { Hourglass, CheckCircle, ChefHat, Package, PartyPopper, XCircle, ChevronDown, ChevronLeft, BikeIcon } from 'lucide-react'
 import { ordersApi } from '../api/orders'
 import { normalize } from '../api/client'
 import type { Order, Product } from '../types'
 
-type StepKey = 'confirmed' | 'preparing' | 'delivery'
+type StepKey = 'pending' | 'received' | 'cocking' | 'shipped' | 'delivered'
 
 interface Step {
   key: StepKey
@@ -16,23 +16,86 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  { key: 'confirmed', label: 'Pedido Confirmado', icon: CheckCircle, description: 'Confirmado por el restaurante' },
-  { key: 'preparing', label: 'En Preparación', icon: Clock, description: 'Estimado: 10-15 min' },
-  { key: 'delivery', label: 'En Reparto', icon: Truck, description: 'En camino a tu dirección' },
+  { key: 'pending',   label: 'A la espera de confirmación', icon: Hourglass,   description: 'Esperando que el restaurante confirme' },
+  { key: 'received',  label: 'Pedido Confirmado',           icon: CheckCircle, description: 'Confirmado por el restaurante' },
+  { key: 'cocking',   label: 'En Preparación',              icon: ChefHat,     description: 'Tu pedido se está preparando' },
+  { key: 'shipped',   label: 'Listo para enviar',           icon: Package,     description: 'Preparado y listo para ser enviado' },
+  { key: 'delivered', label: 'Enviado',                     icon: BikeIcon,       description: 'En camino a tu dirección' },
 ]
 
-const TERMINAL_STATUSES = new Set(['delivered', 'success', 'cancelled'])
+const TERMINAL_STATUSES = new Set(['success', 'cancelled'])
 
 function statusToIndex(status?: string): number {
   switch (status) {
-    case 'received': return 1
-    case 'cocking':  return 1
-    case 'shipped':  return 2
-    case 'delivered':
-    case 'success':  return 3
+    case 'received':  return 1
+    case 'cocking':   return 2
+    case 'shipped':   return 3
+    case 'delivered': return 4
     case 'pending':
-    default:         return 0
+    default:          return 0
   }
+}
+
+type TerminalType = 'success' | 'cancelled' | null
+
+function getTerminalType(status?: string): TerminalType {
+  if (status === 'success') return 'success'
+  if (status === 'cancelled') return 'cancelled'
+  return null
+}
+
+function TerminalOverlay({ type, orderNumber }: { type: 'success' | 'cancelled'; orderNumber: string }) {
+  const isSuccess = type === 'success'
+  const Icon = isSuccess ? PartyPopper : XCircle
+  const title = isSuccess ? '¡Pedido Completado!' : 'Pedido Cancelado'
+  const subtitle = isSuccess
+    ? 'Tu pedido ha sido entregado con éxito'
+    : 'Este pedido fue cancelado'
+  const accentColor = isSuccess ? '#5A8A3A' : '#E74C3C'
+  const bgTint = isSuccess ? 'rgba(90, 138, 58, 0.1)' : 'rgba(231, 76, 60, 0.1)'
+  const borderTint = isSuccess ? 'rgba(90, 138, 58, 0.3)' : 'rgba(231, 76, 60, 0.3)'
+
+  return (
+    <div className="anim-fade-in" style={{
+      background: bgTint,
+      border: `1px solid ${borderTint}`,
+      borderRadius: 16,
+      padding: '32px 24px',
+      textAlign: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 12,
+    }}>
+      <div style={{
+        width: 64,
+        height: 64,
+        borderRadius: '50%',
+        background: accentColor,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 4,
+      }}>
+        <Icon size={32} color="#fff" />
+      </div>
+      <div style={{ fontSize: 20, fontWeight: 800, color: accentColor }}>
+        {title}
+      </div>
+      <div style={{ fontSize: 14, color: '#9A9DA8', maxWidth: 240 }}>
+        {subtitle}
+      </div>
+      <div style={{
+        fontSize: 12,
+        color: '#5A5D68',
+        marginTop: 4,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+      }}>
+        Orden #{orderNumber}
+      </div>
+    </div>
+  )
 }
 
 export function OrderStatus() {
@@ -86,6 +149,7 @@ export function OrderStatus() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, order?._id, queryClient])
 
+  const terminalType = getTerminalType(order?.status)
   const currentIndex = statusToIndex(order?.status)
 
   const orderNumber = id?.slice(-4).toUpperCase() ?? '0000'
@@ -142,71 +206,59 @@ export function OrderStatus() {
             </div>
           </div>
 
-          {/* Cancelled banner */}
-          {order?.status === 'cancelled' && (
-            <div style={{ background: 'rgba(231,76,60,0.1)', border: '1px solid rgba(231,76,60,0.3)', borderRadius: 14, padding: '14px 16px', textAlign: 'center' }}>
-              <span style={{ color: '#E74C3C', fontWeight: 700, fontSize: 15 }}>Pedido Cancelado</span>
-            </div>
+          {terminalType ? (
+            <TerminalOverlay type={terminalType} orderNumber={orderNumber} />
+          ) : (
+            <>
+              {/* Steps */}
+              <div style={{ background: '#181B21', borderRadius: 14, padding: '16px 20px' }}>
+                {STEPS.map((step, i) => {
+                  const isCompleted = i < currentIndex
+                  const isActive = i === currentIndex
+                  const isPending = i > currentIndex
+                  const Icon = step.icon
+
+                  return (
+                    <div key={step.key} style={{ display: 'flex', gap: 14, marginBottom: i < STEPS.length - 1 ? 20 : 0 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: '50%',
+                          background: isCompleted ? '#5A8A3A' : isActive ? '#5A8A3A' : '#252830',
+                          border: isActive ? '2px solid #5A8A3A' : 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}>
+                          <Icon size={14} color={isPending ? '#5A5D68' : '#fff'} />
+                        </div>
+                        {i < STEPS.length - 1 && (
+                          <div style={{
+                            width: 2,
+                            flex: 1,
+                            background: isCompleted ? '#5A8A3A' : '#252830',
+                            marginTop: 4,
+                            marginBottom: -12,
+                            minHeight: 24,
+                          }} />
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: isPending ? '#5A5D68' : '#fff' }}>
+                          {step.label}
+                        </div>
+                        <div style={{ fontSize: 12, color: '#9A9DA8', marginTop: 2 }}>
+                          {step.description}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
           )}
-
-          {/* Steps */}
-          <div style={{ background: '#181B21', borderRadius: 14, padding: '16px 20px' }}>
-            {STEPS.map((step, i) => {
-              const isCompleted = i < currentIndex
-              const isActive = i === currentIndex
-              const isPending = i > currentIndex
-              const Icon = step.icon
-
-              return (
-                <div key={step.key} style={{ display: 'flex', gap: 14, marginBottom: i < STEPS.length - 1 ? 20 : 0 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      background: isCompleted ? '#5A8A3A' : isActive ? '#5A8A3A' : '#252830',
-                      border: isActive ? '2px solid #5A8A3A' : 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}>
-                      <Icon size={14} color={isPending ? '#5A5D68' : '#fff'} />
-                    </div>
-                    {i < STEPS.length - 1 && (
-                      <div style={{
-                        width: 2,
-                        flex: 1,
-                        background: isCompleted ? '#5A8A3A' : '#252830',
-                        marginTop: 4,
-                        marginBottom: -12,
-                        minHeight: 24,
-                      }} />
-                    )}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: isPending ? '#5A5D68' : '#fff' }}>
-                      {step.label}
-                    </div>
-                    <div style={{ fontSize: 12, color: '#9A9DA8', marginTop: 2 }}>
-                      {step.description}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* ETA */}
-          <div style={{ background: '#181B21', borderRadius: 14, padding: '14px 16px' }}>
-            <span style={{ fontSize: 11, color: '#9A9DA8', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 8 }}>
-              Tiempo Estimado
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 800 }}>25-35 min</span>
-              <Clock size={24} color="#5A8A3A" />
-            </div>
-          </div>
 
           {/* Order summary */}
           {order && (
