@@ -1,8 +1,16 @@
 import { Truck } from 'lucide-react'
+import { Capacitor } from '@capacitor/core'
+import { Browser } from '@capacitor/browser'
 
 export function Login() {
-  function handleGoogle() {
-    window.location.href = '/api/users/googleAuth'
+  async function handleGoogle() {
+    const base = import.meta.env.VITE_API_URL || '/api'
+
+    if (Capacitor.isNativePlatform()) {
+      await Browser.open({ url: `${base}/users/googleAuth?platform=native` })
+    } else {
+      window.location.href = `${base}/users/googleAuth`
+    }
   }
 
   return (

@@ -4,6 +4,7 @@ import { TabLayout } from './components/TabLayout'
 import { Login } from './pages/Login'
 import { AuthCallback } from './pages/AuthCallback'
 import { useAuthStore } from './store/authStore'
+import { useDeepLinkAuth } from './hooks/useDeepLinkAuth'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -12,6 +13,8 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 }
 
 export function App() {
+  useDeepLinkAuth()
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />

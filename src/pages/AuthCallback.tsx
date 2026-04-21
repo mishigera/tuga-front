@@ -13,13 +13,14 @@ export function AuthCallback() {
     const name = params.get('name') ?? ''
     const email = params.get('email') ?? ''
     const picture = params.get('picture') ?? undefined
+    const token = params.get('token') ?? undefined
 
     if (!sub) {
       navigate('/login?error=auth_failed', { replace: true })
       return
     }
 
-    useAuthStore.getState().login({ id: sub, name, email, picture })
+    useAuthStore.getState().login({ id: sub, name, email, picture, token })
 
     usersApi.getById(sub)
       .then((user) => {

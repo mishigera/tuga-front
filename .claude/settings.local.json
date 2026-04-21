@@ -14,7 +14,10 @@
       "Bash(git stash:*)",
       "Bash(lsof -ti:5173)",
       "Bash(xargs kill:*)",
-      "Bash(xargs ps:*)"
+      "Bash(xargs ps:*)",
+      "Bash(node:*)",
+      "Bash(ls /Users/emmanuel/Documents/tuga-front-app/capacitor.config.*)",
+      "Bash(cat /Users/emmanuel/Documents/tuga-front-app/.env.*)"
     ]
   }
 }

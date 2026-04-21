@@ -120,7 +120,8 @@ export function OrderStatus() {
     let errorCount = 0
     const MAX_RETRIES = 3
 
-    const es = new EventSource(`/api/orders/notifications/${id}`)
+    const base = import.meta.env.VITE_API_URL || '/api'
+    const es = new EventSource(`${base}/orders/notifications/${id}`)
 
     es.onmessage = (event: MessageEvent) => {
       errorCount = 0

@@ -1,6 +1,6 @@
 import { useAuthStore } from '../store/authStore'
 
-const BASE_URL = '/api'
+const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 // Mongoose sometimes serializes _id as `id` (virtual). Normalize to _id.
 export function normalize<T>(data: T): T {
@@ -14,11 +14,13 @@ export function normalize<T>(data: T): T {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = useAuthStore.getState().user?.token
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options?.headers,
     },
   })
@@ -39,10 +41,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 async function requestForm<T>(path: string, form: FormData, method = 'POST'): Promise<T> {
+  const token = useAuthStore.getState().user?.token
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
     credentials: 'include',
-    // no Content-Type header, browser sets multipart boundary automatically
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
     body: form,
   })
 
